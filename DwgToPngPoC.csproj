@@ -26,6 +26,14 @@
 
   <ItemGroup>
     <None Update="Tools\FlashViewer\**\*">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+    <None Update="Tools\FlashViewer\PUT_LEGACY_CHROMIUM_AND_PEPPERFLASH_HERE.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Update="Tools\FlashViewer\PepperFlash\PUT_PEPPERFLASH_X86_DLL_HERE.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>

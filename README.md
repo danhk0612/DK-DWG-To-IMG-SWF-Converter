@@ -70,7 +70,7 @@ Hatch, Insert, Spline 개수도 함께 표시합니다. 고위험 도면에서�
 
 SWF 생성 자체에는 Flash가 필요하지 않습니다.
 
-프로그램의 선택적 `SWF 보기` 기능은 사용자가 직접 준비한 구형 Chromium과 Pepper Flash를 사용합니다.
+프로그램의 선택적 `SWF 보기` 기능은 Chromium 53.0.2785.0 x86과 x86 Pepper Flash를 사용합니다.
 
 ```text
 Tools\FlashViewer\Chromium\chrome.exe
@@ -78,7 +78,11 @@ Tools\FlashViewer\PepperFlash\pepflashplayer.dll
 Tools\FlashViewer\PepperFlash\manifest.json   # 선택
 ```
 
-Chromium/Flash 바이너리는 저장소와 배포물에 포함하지 않습니다.
+- Chromium은 프로그램의 `Chromium 다운로드` 버튼으로 GitHub Release에서 내려받아 설치할 수 있습니다.
+- 배포하는 Chromium은 공식 snapshot revision `403380`의 Chromium 53.0.2785.0 x86입니다.
+- Chromium ZIP은 SHA-256 `66ddd4f54b5bbb21ee87eba2beed9677f2edbe87592372ca74ed2d42f6c4bce2`를 확인한 뒤 설치합니다.
+- Pepper Flash는 패키지에 포함하지 않으며 사용자가 x86 `pepflashplayer.dll`을 직접 넣어야 합니다.
+- Chromium/Pepper Flash 바이너리는 기본 프로그램 배포물에 포함하지 않습니다.
 
 ## 주요 파일
 

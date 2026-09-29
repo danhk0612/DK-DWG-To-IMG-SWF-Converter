@@ -2,6 +2,7 @@
 bin/
 obj/
 publish/
+_viewer-package/
 
 # Visual Studio / local IDE state
 .vs/
@@ -10,7 +11,8 @@ publish/
 
 # Optional local SWF viewer binaries (not distributed)
 Tools/FlashViewer/Chromium/
-Tools/FlashViewer/PepperFlash/
+Tools/FlashViewer/PepperFlash/*
+!Tools/FlashViewer/PepperFlash/PUT_PEPPERFLASH_X86_DLL_HERE.txt
 
 # Windows / temporary files
 Thumbs.db
