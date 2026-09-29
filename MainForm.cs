@@ -28,6 +28,7 @@ public sealed class MainForm : Form
     private readonly TextBox _outputFolder = new();
     private readonly Label _flashViewerStatus = new();
     private readonly Button _downloadChromium = new();
+    private readonly Button _refreshFlashViewer = new();
     private readonly Button _convert = new();
     private readonly Button _viewSwf = new();
     private string? _lastSwfPath;
@@ -220,6 +221,13 @@ public sealed class MainForm : Form
         _downloadChromium.Margin = new Padding(4, 2, 4, 2);
         _downloadChromium.Click += DownloadChromiumClickedAsync;
         grid.Controls.Add(_downloadChromium, 2, 2);
+
+        _refreshFlashViewer.Text = "상태 새로고침";
+        _refreshFlashViewer.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+        _refreshFlashViewer.Height = 28;
+        _refreshFlashViewer.Margin = new Padding(4, 2, 4, 2);
+        _refreshFlashViewer.Click += (_, _) => UpdateFlashViewerStatus();
+        grid.Controls.Add(_refreshFlashViewer, 2, 2);
 
         var openViewerFolder = new Button
         {
@@ -785,6 +793,7 @@ public sealed class MainForm : Form
         _flashViewerStatus.Text = LegacyFlashViewer.StatusText;
         _flashViewerStatus.ForeColor = LegacyFlashViewer.IsAvailable ? Color.DarkGreen : Color.DarkRed;
         _downloadChromium.Visible = !LegacyFlashViewer.IsChromiumX86;
+        _refreshFlashViewer.Visible = LegacyFlashViewer.IsChromiumX86;
     }
 
     private async void DownloadChromiumClickedAsync(object? sender, EventArgs e)
