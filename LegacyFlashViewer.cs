@@ -1,5 +1,7 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
+using System.IO.Compression;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
@@ -7,6 +9,13 @@ namespace DwgToPngPoC;
 
 internal static class LegacyFlashViewer
 {
+    private const string ChromiumPackageUrl =
+        "https://github.com/danhk0612/DK-DWG-To-IMG-SWF-Converter/releases/download/viewer-chromium-53.0.2785.143-x86/chromium-53.0.2785.143-x86.zip";
+    private const string ChromiumPackageSha256 =
+        "02707dd0b701cefa233e962f74d24621b63c51fc69c72842583a1c02912c88f9";
+
+    private static readonly HttpClient HttpClient = new();
+
     public static string ToolDirectory => Path.Combine(AppContext.BaseDirectory, "Tools", "FlashViewer");
     public static string ChromiumDirectory => Path.Combine(ToolDirectory, "Chromium");
     public static string ChromiumExecutablePath => Path.Combine(ChromiumDirectory, "chrome.exe");
@@ -14,19 +23,85 @@ internal static class LegacyFlashViewer
     public static string PepperFlashPath => Path.Combine(PepperDirectory, "pepflashplayer.dll");
     public static string PepperManifestPath => Path.Combine(PepperDirectory, "manifest.json");
 
-    public static bool IsAvailable => File.Exists(ChromiumExecutablePath) && File.Exists(PepperFlashPath);
+    public static bool HasChromium => File.Exists(ChromiumExecutablePath);
+    public static bool HasPepperFlash => File.Exists(PepperFlashPath);
+    public static bool IsChromiumX86 => HasChromium && IsX86PortableExecutable(ChromiumExecutablePath);
+    public static bool IsPepperFlashX86 => HasPepperFlash && IsX86PortableExecutable(PepperFlashPath);
+    public static bool IsAvailable => IsChromiumX86 && IsPepperFlashX86;
 
     public static string StatusText
     {
         get
         {
-            if (!File.Exists(ChromiumExecutablePath) && !File.Exists(PepperFlashPath))
+            if (!HasChromium && !HasPepperFlash)
                 return "Chromium / Pepper Flash 없음";
-            if (!File.Exists(ChromiumExecutablePath))
-                return "Chromium 없음";
-            if (!File.Exists(PepperFlashPath))
-                return "pepflashplayer.dll 없음";
+            if (!HasChromium)
+                return "Chromium 없음 (다운로드 가능)";
+            if (!IsChromiumX86)
+                return "Chromium x86 필요";
+            if (!HasPepperFlash)
+                return "pepflashplayer.dll x86 없음";
+            if (!IsPepperFlashX86)
+                return "Pepper Flash x86 필요";
             return "사용 가능";
+        }
+    }
+
+    public static async Task InstallChromiumAsync()
+    {
+        Directory.CreateDirectory(ToolDirectory);
+
+        var packagePath = Path.Combine(
+            Path.GetTempPath(),
+            $"chromium-53.0.2785.143-x86-{Guid.NewGuid():N}.zip");
+        var stagingDirectory = Path.Combine(
+            ToolDirectory,
+            $".Chromium-install-{Guid.NewGuid():N}");
+
+        try
+        {
+            using (var response = await HttpClient.GetAsync(
+                       ChromiumPackageUrl,
+                       HttpCompletionOption.ResponseHeadersRead))
+            {
+                response.EnsureSuccessStatusCode();
+
+                await using var input = await response.Content.ReadAsStreamAsync();
+                await using var output = File.Create(packagePath);
+                await input.CopyToAsync(output);
+            }
+
+            await using (var stream = File.OpenRead(packagePath))
+            using (var sha256 = SHA256.Create())
+            {
+                var actualHash = Convert.ToHexString(sha256.ComputeHash(stream)).ToLowerInvariant();
+                if (!string.Equals(actualHash, ChromiumPackageSha256, StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidDataException(
+                        $"Chromium 다운로드 파일의 SHA-256이 일치하지 않습니다.{Environment.NewLine}" +
+                        $"예상: {ChromiumPackageSha256}{Environment.NewLine}" +
+                        $"실제: {actualHash}");
+            }
+
+            Directory.CreateDirectory(stagingDirectory);
+            ZipFile.ExtractToDirectory(packagePath, stagingDirectory, overwriteFiles: true);
+
+            var stagedExecutable = Path.Combine(stagingDirectory, "chrome.exe");
+            if (!File.Exists(stagedExecutable))
+                throw new InvalidDataException("Chromium 패키지에 chrome.exe가 없습니다.");
+            if (!IsX86PortableExecutable(stagedExecutable))
+                throw new InvalidDataException("다운로드한 Chromium이 x86 실행 파일이 아닙니다.");
+
+            if (Directory.Exists(ChromiumDirectory))
+                Directory.Delete(ChromiumDirectory, recursive: true);
+
+            Directory.Move(stagingDirectory, ChromiumDirectory);
+        }
+        finally
+        {
+            if (File.Exists(packagePath))
+                File.Delete(packagePath);
+            if (Directory.Exists(stagingDirectory))
+                Directory.Delete(stagingDirectory, recursive: true);
         }
     }
 
@@ -34,14 +109,18 @@ internal static class LegacyFlashViewer
     {
         if (!File.Exists(swfPath))
             throw new FileNotFoundException("SWF 파일이 없습니다.", swfPath);
-        if (!File.Exists(ChromiumExecutablePath))
+        if (!HasChromium)
             throw new FileNotFoundException(
-                "구형 Chromium이 없습니다. Tools\\FlashViewer\\Chromium 폴더에 chrome.exe와 함께 필요한 Chromium 파일을 넣어주세요.",
+                "구형 Chromium이 없습니다. 프로그램의 Chromium 다운로드 기능으로 설치해주세요.",
                 ChromiumExecutablePath);
-        if (!File.Exists(PepperFlashPath))
+        if (!IsChromiumX86)
+            throw new InvalidOperationException("SWF 뷰어용 Chromium은 x86 버전이어야 합니다.");
+        if (!HasPepperFlash)
             throw new FileNotFoundException(
-                "pepflashplayer.dll이 없습니다. Tools\\FlashViewer\\PepperFlash 폴더에 직접 넣어주세요.",
+                "pepflashplayer.dll이 없습니다. Tools\\FlashViewer\\PepperFlash 폴더에 x86 DLL을 직접 넣어주세요.",
                 PepperFlashPath);
+        if (!IsPepperFlashX86)
+            throw new InvalidOperationException("pepflashplayer.dll은 x86 버전이어야 합니다.");
 
         var sessionDirectory = Path.Combine(
             Path.GetTempPath(),
@@ -80,6 +159,30 @@ internal static class LegacyFlashViewer
 
         _ = Process.Start(startInfo)
             ?? throw new InvalidOperationException("구형 Chromium SWF 뷰어를 시작하지 못했습니다.");
+    }
+
+    private static bool IsX86PortableExecutable(string path)
+    {
+        try
+        {
+            using var stream = File.OpenRead(path);
+            using var reader = new BinaryReader(stream);
+
+            if (stream.Length < 64)
+                return false;
+
+            stream.Position = 0x3C;
+            var peOffset = reader.ReadInt32();
+            if (peOffset < 0 || peOffset + 6 > stream.Length)
+                return false;
+
+            stream.Position = peOffset + 4;
+            return reader.ReadUInt16() == 0x014c;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private static string BuildWrapperHtml(string swfPath)
