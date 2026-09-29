@@ -27,6 +27,9 @@
   <ItemGroup>
     <None Update="Tools\FlashViewer\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+    <None Update="Tools\FlashViewer\PUT_LEGACY_CHROMIUM_AND_PEPPERFLASH_HERE.txt">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
   </ItemGroup>
