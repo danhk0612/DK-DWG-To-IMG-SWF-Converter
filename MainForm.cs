@@ -796,7 +796,7 @@ public sealed class MainForm : Form
     {
         var confirm = MessageBox.Show(this,
             "SWF 확인용 Chromium 53.0.2785.0 x86을 GitHub에서 다운로드합니다." + Environment.NewLine +
-            "다운로드 크기는 약 61 MB입니다." + Environment.NewLine + Environment.NewLine +
+            "다운로드 크기는 약 98 MB입니다." + Environment.NewLine + Environment.NewLine +
             "Pepper Flash는 포함되지 않으며 x86 pepflashplayer.dll은 직접 넣어야 합니다." + Environment.NewLine + Environment.NewLine +
             "계속하시겠습니까?",
             "Chromium 다운로드",
