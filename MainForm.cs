@@ -222,14 +222,20 @@ public sealed class MainForm : Form
         };
 
         _downloadChromium.Text = "Chromium 다운로드";
-        _downloadChromium.Dock = DockStyle.Fill;
-        _downloadChromium.Margin = new Padding(4, 2, 4, 2);
+        _downloadChromium.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+        _downloadChromium.Height = 28;
+        _downloadChromium.Left = 4;
+        _downloadChromium.Top = 2;
+        _downloadChromium.Width = 147;
         _downloadChromium.Click += DownloadChromiumClickedAsync;
         viewerActionPanel.Controls.Add(_downloadChromium);
 
         _refreshFlashViewer.Text = "상태 새로고침";
-        _refreshFlashViewer.Dock = DockStyle.Fill;
-        _refreshFlashViewer.Margin = new Padding(4, 2, 4, 2);
+        _refreshFlashViewer.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+        _refreshFlashViewer.Height = 28;
+        _refreshFlashViewer.Left = 4;
+        _refreshFlashViewer.Top = 2;
+        _refreshFlashViewer.Width = 147;
         _refreshFlashViewer.Click += (_, _) => UpdateFlashViewerStatus();
         viewerActionPanel.Controls.Add(_refreshFlashViewer);
 
