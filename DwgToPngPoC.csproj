@@ -5,6 +5,8 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <SelfContained>false</SelfContained>
+    <PublishSingleFile>false</PublishSingleFile>
     <AssemblyName>DwgConverter</AssemblyName>
     <RootNamespace>DwgToPngPoC</RootNamespace>
     <Version>0.3.8</Version>
