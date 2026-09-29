@@ -1,17 +1,19 @@
-# .NET build output
+# .NET build / publish output
 bin/
 obj/
 publish/
 
-# Visual Studio / user state
+# Visual Studio / local IDE state
 .vs/
 *.user
 *.suo
 
-# Local Flash viewer binaries supplied by the user
+# Optional local SWF viewer binaries (not distributed)
 Tools/FlashViewer/Chromium/
 Tools/FlashViewer/PepperFlash/
 
-# Local/temp files
+# Windows / temporary files
+Thumbs.db
+Desktop.ini
 *.tmp
 *.log

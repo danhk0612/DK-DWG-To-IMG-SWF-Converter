@@ -785,7 +785,7 @@ public sealed class MainForm : Form
 
     private void OpenSwfToolFolder()
     {
-        MessageBox.Show(this, "v0.3.2부터 SWF 변환에 외부 svg2swf 도구가 필요하지 않습니다.", Text,
+        MessageBox.Show(this, "SWF 변환은 내장 DefineShape3 직접 Writer를 사용합니다. 외부 변환 도구는 필요하지 않습니다.", Text,
             MessageBoxButtons.OK, MessageBoxIcon.Information);
     }
 }
