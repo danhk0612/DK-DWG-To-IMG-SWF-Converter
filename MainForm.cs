@@ -215,19 +215,25 @@ public sealed class MainForm : Form
         grid.Controls.Add(MakeLabel("SWF 뷰어"), 0, 2);
         grid.Controls.Add(_flashViewerStatus, 1, 2);
 
+        var viewerActionPanel = new Panel
+        {
+            Dock = DockStyle.Fill,
+            Margin = Padding.Empty
+        };
+
         _downloadChromium.Text = "Chromium 다운로드";
-        _downloadChromium.Anchor = AnchorStyles.Left | AnchorStyles.Right;
-        _downloadChromium.Height = 28;
+        _downloadChromium.Dock = DockStyle.Fill;
         _downloadChromium.Margin = new Padding(4, 2, 4, 2);
         _downloadChromium.Click += DownloadChromiumClickedAsync;
-        grid.Controls.Add(_downloadChromium, 2, 2);
+        viewerActionPanel.Controls.Add(_downloadChromium);
 
         _refreshFlashViewer.Text = "상태 새로고침";
-        _refreshFlashViewer.Anchor = AnchorStyles.Left | AnchorStyles.Right;
-        _refreshFlashViewer.Height = 28;
+        _refreshFlashViewer.Dock = DockStyle.Fill;
         _refreshFlashViewer.Margin = new Padding(4, 2, 4, 2);
         _refreshFlashViewer.Click += (_, _) => UpdateFlashViewerStatus();
-        grid.Controls.Add(_refreshFlashViewer, 2, 2);
+        viewerActionPanel.Controls.Add(_refreshFlashViewer);
+
+        grid.Controls.Add(viewerActionPanel, 2, 2);
 
         var openViewerFolder = new Button
         {
