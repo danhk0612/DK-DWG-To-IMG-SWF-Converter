@@ -23,6 +23,12 @@ internal static class LegacyFlashViewer
     public static string PepperFlashPath => Path.Combine(PepperDirectory, "pepflashplayer.dll");
     public static string PepperManifestPath => Path.Combine(PepperDirectory, "manifest.json");
 
+    public static void EnsureDirectories()
+    {
+        Directory.CreateDirectory(ToolDirectory);
+        Directory.CreateDirectory(PepperDirectory);
+    }
+
     public static bool HasChromium => File.Exists(ChromiumExecutablePath);
     public static bool HasPepperFlash => File.Exists(PepperFlashPath);
     public static bool IsChromiumX86 => HasChromium && IsX86PortableExecutable(ChromiumExecutablePath);
