@@ -158,9 +158,8 @@ internal sealed class CadConversionPipeline
                 : string.Empty;
             _log($"  [4/6] 스타일 적용 완료 ({stage.Elapsed.TotalSeconds:0.0}초, {GetFileSizeText(styledSvg)}{fillDetail})");
 
-            // Normal-size SWF uses the already styled SVG. This is the v0.3.2 path that
-            // preserved reconstructed region fills and produced Animate-friendly DefineShape3
-            // output, while still avoiding the old svg2swf.exe dependency.
+            // Normal-size SWF uses the already styled SVG so reconstructed region fills
+            // are preserved in Animate-friendly DefineShape3 output.
             if (effectiveSettings.ExportSwf && !useDirectCadSwf)
             {
                 stage.Restart();

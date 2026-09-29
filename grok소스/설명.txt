@@ -1,7 +1,0 @@
-위에 보낸 세 파일은 exe를 빌드할 때 쓴 원본을 수정 없이 그대로 담은 거예요.
-
-swf_writer.py는 전체 273줄이에요. 비트 단위 기록, RECT 구조, 태그 헤더, LineStyle과 FillStyle 배열, DefineShape3 인코딩, 직선 edge 분할(_edge), PlaceObject2, twips 변환(1px = 20twips, _to_twips)이 모두 들어 있어요.
-
-converter_swf_part.py는 converter.py에서 SWF에 쓰는 부분만 원문 그대로 모은 파일이에요. import, record, _ext, _fit, _rgba, write_swf가 들어 있어요. write_swf는 ezdxf Recorder 데이터를 받아 좌표를 변환하고, 곡선을 flattening(flat)으로 직선으로 쪼갠 뒤 선 두께와 색을 입혀요.
-
-converter.py 전체도 함께 넣었으니, 발췌본은 참고용으로 보고 실제 사용할 때는 전체 파일을 기준으로 하세요.
