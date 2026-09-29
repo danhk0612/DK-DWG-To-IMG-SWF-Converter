@@ -1,6 +1,6 @@
 # DwgConverter v0.3.8
 
-DWG 모델 공간을 SVG, PNG, 편집 가능한 벡터 SWF로 변환하는 Windows .NET 8 WinForms 도구입니다.
+DWG 모델 공간을 SVG, PNG, 편집 가능한 벡터 SWF로 변환하는 Windows .NET 10 WinForms 도구입니다.
 
 ## 현재 변환 경로
 
@@ -92,7 +92,7 @@ Chromium/Flash 바이너리는 저장소와 배포물에 포함하지 않습니�
 
 ## 빌드
 
-Windows에서 .NET 8 SDK가 필요합니다.
+Windows에서 .NET 10 SDK가 필요합니다.
 
 일반 Release 빌드:
 
@@ -106,4 +106,4 @@ build.bat
 publish-win-x64.bat
 ```
 
-현재 배포 스크립트는 self-contained 단일 파일 방식입니다. .NET 10 및 Framework-dependent 배포 전환은 별도 단계에서 진행합니다.
+현재 배포 스크립트는 self-contained 단일 파일 방식입니다. Framework-dependent 배포 전환은 별도 단계에서 진행합니다.
