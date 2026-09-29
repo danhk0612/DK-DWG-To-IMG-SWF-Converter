@@ -26,7 +26,6 @@ public sealed class MainForm : Form
     private readonly ComboBox _verticalPlacement = new();
 
     private readonly TextBox _outputFolder = new();
-    private readonly Label _swfToolStatus = new();
     private readonly Label _flashViewerStatus = new();
     private readonly Button _convert = new();
     private readonly Button _viewSwf = new();
@@ -41,14 +40,15 @@ public sealed class MainForm : Form
     {
         Text = "DWG → SVG / PNG / SWF v0.3.8";
         StartPosition = FormStartPosition.CenterScreen;
+        AutoScaleMode = AutoScaleMode.Dpi;
+        Font = new Font("Segoe UI", 9F);
         Width = 960;
-        Height = 760;
-        MinimumSize = new Size(860, 680);
+        Height = 700;
+        MinimumSize = new Size(840, 620);
         AllowDrop = true;
 
         BuildUi();
         ApplySettings(SettingsStore.Load());
-        UpdateSwfToolStatus();
         UpdateFlashViewerStatus();
 
         DragEnter += OnDragEnter;
@@ -60,50 +60,55 @@ public sealed class MainForm : Form
 
     private void BuildUi()
     {
+        SuspendLayout();
+
         var root = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
             ColumnCount = 1,
-            RowCount = 6,
+            RowCount = 5,
             Padding = new Padding(12)
         };
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 34));
-        root.RowStyles.Add(new RowStyle(SizeType.Percent, 34));
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 300));
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));
-        root.RowStyles.Add(new RowStyle(SizeType.Percent, 66));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 138));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 205));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 64));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 46));
+        root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         Controls.Add(root);
 
-        root.Controls.Add(new Label
-        {
-            Dock = DockStyle.Fill,
-            Text = "DWG 파일을 아래 목록으로 드래그하거나 파일 추가 버튼을 사용하세요.",
-            TextAlign = ContentAlignment.MiddleLeft,
-            Font = new Font(Font, FontStyle.Bold)
-        }, 0, 0);
+        root.Controls.Add(BuildFilePanel(), 0, 0);
+        root.Controls.Add(BuildSettingsTabs(), 0, 1);
+        root.Controls.Add(BuildOutputPanel(), 0, 2);
+        root.Controls.Add(BuildActionsPanel(), 0, 3);
+        root.Controls.Add(BuildLogPanel(), 0, 4);
 
-        root.Controls.Add(BuildFilePanel(), 0, 1);
-        root.Controls.Add(BuildSettingsTabs(), 0, 2);
-        root.Controls.Add(BuildOutputPanel(), 0, 3);
-        root.Controls.Add(BuildActionsPanel(), 0, 4);
-
-        _log.Dock = DockStyle.Fill;
-        _log.Multiline = true;
-        _log.ScrollBars = ScrollBars.Vertical;
-        _log.ReadOnly = true;
-        _log.Font = new Font("Consolas", 9F);
-        root.Controls.Add(_log, 0, 5);
+        ResumeLayout();
     }
 
     private Control BuildFilePanel()
     {
-        var panel = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 1 };
+        var group = new GroupBox
+        {
+            Text = "입력 DWG",
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8),
+            Margin = new Padding(0, 0, 0, 4)
+        };
+
+        var panel = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 2,
+            RowCount = 1
+        };
         panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 110));
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 108));
 
         _files.Dock = DockStyle.Fill;
+        _files.Margin = new Padding(0, 0, 0, 4);
         _files.HorizontalScrollbar = true;
+        _files.IntegralHeight = false;
+        _files.BorderStyle = BorderStyle.FixedSingle;
         panel.Controls.Add(_files, 0, 0);
 
         var buttons = new FlowLayoutPanel
@@ -111,145 +116,162 @@ public sealed class MainForm : Form
             Dock = DockStyle.Fill,
             FlowDirection = FlowDirection.TopDown,
             WrapContents = false,
-            Padding = new Padding(8, 0, 0, 0)
+            Padding = new Padding(6, 0, 0, 0)
         };
 
-        var add = new Button { Text = "파일 추가", Width = 95, Height = 30 };
+        var add = new Button { Text = "파일 추가", Width = 94, Height = 28, Margin = new Padding(0, 0, 0, 4) };
         add.Click += (_, _) => BrowseFiles();
-        var remove = new Button { Text = "선택 제거", Width = 95, Height = 30 };
+
+        var remove = new Button { Text = "선택 제거", Width = 94, Height = 28, Margin = new Padding(0, 0, 0, 4) };
         remove.Click += (_, _) => RemoveSelected();
-        var clear = new Button { Text = "전체 제거", Width = 95, Height = 30 };
+
+        var clear = new Button { Text = "전체 제거", Width = 94, Height = 28, Margin = new Padding(0) };
         clear.Click += (_, _) => _files.Items.Clear();
 
         buttons.Controls.Add(add);
         buttons.Controls.Add(remove);
         buttons.Controls.Add(clear);
         panel.Controls.Add(buttons, 1, 0);
-        return panel;
+
+        group.Controls.Add(panel);
+        return group;
     }
 
     private Control BuildSettingsTabs()
     {
-        var tabs = new TabControl { Dock = DockStyle.Fill };
+        var group = new GroupBox
+        {
+            Text = "변환 설정",
+            Dock = DockStyle.Fill,
+            Padding = new Padding(6),
+            Margin = new Padding(0, 0, 0, 6)
+        };
+
+        var tabs = new TabControl
+        {
+            Dock = DockStyle.Fill,
+            Padding = new Point(12, 4)
+        };
         tabs.TabPages.Add(BuildOutputTab());
         tabs.TabPages.Add(BuildStyleTab());
         tabs.TabPages.Add(BuildLayoutTab());
-        return tabs;
+
+        group.Controls.Add(tabs);
+        return group;
     }
 
     private TabPage BuildOutputTab()
     {
         var page = new TabPage("출력");
-        var grid = CreateSettingsGrid(5);
+        var grid = CreateSettingsGrid(3);
         page.Controls.Add(grid);
 
-        _exportSvg.Text = "SVG (Animate 편집용)";
+        _exportSvg.Text = "SVG";
         _exportPng.Text = "PNG";
-        _exportSwf.Text = "SWF (벡터)";
+        _exportSwf.Text = "SWF";
+        ConfigureCheckBox(_exportSvg);
+        ConfigureCheckBox(_exportPng);
+        ConfigureCheckBox(_exportSwf);
 
         _width.Minimum = 64;
         _width.Maximum = 30000;
+        ConfigureInputControl(_width);
+
         _height.Minimum = 64;
         _height.Maximum = 30000;
+        ConfigureInputControl(_height);
 
-        grid.Controls.Add(MakeLabel("형식"), 0, 0);
-        var formatFlow = new FlowLayoutPanel { Dock = DockStyle.Fill, AutoSize = true };
-        formatFlow.Controls.Add(_exportSvg);
-        formatFlow.Controls.Add(_exportPng);
-        formatFlow.Controls.Add(_exportSwf);
-        grid.SetColumnSpan(formatFlow, 3);
-        grid.Controls.Add(formatFlow, 1, 0);
+        grid.Controls.Add(MakeLabel("출력 형식"), 0, 0);
+        var formatGrid = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 4,
+            RowCount = 1,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty
+        };
+        formatGrid.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        formatGrid.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        formatGrid.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        formatGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        formatGrid.Controls.Add(_exportSvg, 0, 0);
+        formatGrid.Controls.Add(_exportPng, 1, 0);
+        formatGrid.Controls.Add(_exportSwf, 2, 0);
+        grid.SetColumnSpan(formatGrid, 3);
+        grid.Controls.Add(formatGrid, 1, 0);
 
         grid.Controls.Add(MakeLabel("작업 공간 너비"), 0, 1);
         grid.Controls.Add(_width, 1, 1);
         grid.Controls.Add(MakeLabel("작업 공간 높이"), 2, 1);
         grid.Controls.Add(_height, 3, 1);
 
-        _swfToolStatus.Dock = DockStyle.Fill;
-        _swfToolStatus.TextAlign = ContentAlignment.MiddleLeft;
-        grid.Controls.Add(MakeLabel("SWF 출력기"), 0, 2);
-        grid.SetColumnSpan(_swfToolStatus, 2);
-        grid.Controls.Add(_swfToolStatus, 1, 2);
-
-        var openToolFolder = new Button { Text = "방식 안내", Dock = DockStyle.Fill };
-        openToolFolder.Click += (_, _) => OpenSwfToolFolder();
-        grid.Controls.Add(openToolFolder, 3, 2);
-
         _flashViewerStatus.Dock = DockStyle.Fill;
         _flashViewerStatus.TextAlign = ContentAlignment.MiddleLeft;
-        grid.Controls.Add(MakeLabel("SWF 뷰어"), 0, 3);
+        _flashViewerStatus.Margin = new Padding(3, 0, 3, 0);
+
+        grid.Controls.Add(MakeLabel("SWF 뷰어"), 0, 2);
         grid.SetColumnSpan(_flashViewerStatus, 2);
-        grid.Controls.Add(_flashViewerStatus, 1, 3);
+        grid.Controls.Add(_flashViewerStatus, 1, 2);
 
-        var openViewerFolder = new Button { Text = "뷰어 폴더 열기", Dock = DockStyle.Fill };
-        openViewerFolder.Click += (_, _) => OpenFlashViewerFolder();
-        grid.Controls.Add(openViewerFolder, 3, 3);
-
-        var hint = new Label
+        var openViewerFolder = new Button
         {
-            Dock = DockStyle.Fill,
-            AutoSize = true,
-            Text = "SWF 변환은 내장 DefineShape3 직접 Writer를 사용합니다. SWF 보기는 사용자 제공 구형 Chromium + pepflashplayer.dll을 사용합니다.",
-            ForeColor = SystemColors.GrayText,
-            TextAlign = ContentAlignment.MiddleLeft
+            Text = "뷰어 폴더 열기",
+            Anchor = AnchorStyles.Left | AnchorStyles.Right,
+            Height = 28,
+            Margin = new Padding(4, 2, 4, 2)
         };
-        grid.SetColumnSpan(hint, 4);
-        grid.Controls.Add(hint, 0, 4);
+        openViewerFolder.Click += (_, _) => OpenFlashViewerFolder();
+        grid.Controls.Add(openViewerFolder, 3, 2);
+
         return page;
     }
 
     private TabPage BuildStyleTab()
     {
         var page = new TabPage("스타일");
-        var grid = CreateSettingsGrid(4);
+        var grid = CreateSettingsGrid(3);
         page.Controls.Add(grid);
 
-        _transparentBackground.Text = "배경 투명";
+        _transparentBackground.Text = "투명 배경";
+        ConfigureCheckBox(_transparentBackground);
         _transparentBackground.CheckedChanged += (_, _) => UpdateStyleControlState();
         grid.Controls.Add(_transparentBackground, 0, 0);
-        grid.Controls.Add(MakeLabel("배경색"), 2, 0);
         SetupColorButton(_backgroundColorButton, () => _backgroundColor, c => _backgroundColor = c);
-        grid.Controls.Add(_backgroundColorButton, 3, 0);
+        grid.Controls.Add(_backgroundColorButton, 1, 0);
 
-        _overrideStrokeColor.Text = "선 색 일괄 지정";
+        _overrideStrokeColor.Text = "선 색상 지정";
+        ConfigureCheckBox(_overrideStrokeColor);
         _overrideStrokeColor.CheckedChanged += (_, _) => UpdateStyleControlState();
         grid.Controls.Add(_overrideStrokeColor, 0, 1);
         SetupColorButton(_strokeColorButton, () => _strokeColor, c => _strokeColor = c);
         grid.Controls.Add(_strokeColorButton, 1, 1);
 
-        _overrideStrokeWidth.Text = "선 두께 일괄 지정";
+        _overrideStrokeWidth.Text = "선 두께 지정";
+        ConfigureCheckBox(_overrideStrokeWidth);
         _overrideStrokeWidth.CheckedChanged += (_, _) => UpdateStyleControlState();
         grid.Controls.Add(_overrideStrokeWidth, 2, 1);
+
         _strokeWidth.DecimalPlaces = 1;
         _strokeWidth.Increment = 0.1m;
         _strokeWidth.Minimum = 0.1m;
         _strokeWidth.Maximum = 100m;
-        _strokeWidth.Dock = DockStyle.Fill;
+        ConfigureInputControl(_strokeWidth);
         grid.Controls.Add(_strokeWidth, 3, 1);
 
-        _fillClosedShapes.Text = "닫힌 도형 내부 채우기";
+        _fillClosedShapes.Text = "닫힌 영역 채우기";
+        ConfigureCheckBox(_fillClosedShapes);
         _fillClosedShapes.CheckedChanged += (_, _) => UpdateStyleControlState();
         grid.Controls.Add(_fillClosedShapes, 0, 2);
         SetupColorButton(_fillColorButton, () => _fillColor, c => _fillColor = c);
         grid.Controls.Add(_fillColorButton, 1, 2);
 
-        var hint = new Label
-        {
-            Dock = DockStyle.Fill,
-            AutoSize = true,
-            Text = "면 채우기는 단일 폐곡선뿐 아니라 LINE/열린 Polyline의 교차점·T접점까지 계산해 폐영역을 탐지합니다.",
-            ForeColor = SystemColors.GrayText,
-            TextAlign = ContentAlignment.MiddleLeft
-        };
-        grid.SetColumnSpan(hint, 4);
-        grid.Controls.Add(hint, 0, 3);
         return page;
     }
 
     private TabPage BuildLayoutTab()
     {
-        var page = new TabPage("내용 크기 / 정렬");
-        var grid = CreateSettingsGrid(4);
+        var page = new TabPage("크기 / 정렬");
+        var grid = CreateSettingsGrid(2);
         page.Controls.Add(grid);
 
         SetupContentSize(_contentWidth);
@@ -262,71 +284,123 @@ public sealed class MainForm : Form
 
         _horizontalPlacement.DropDownStyle = ComboBoxStyle.DropDownList;
         _horizontalPlacement.Items.AddRange(["왼쪽", "가운데", "오른쪽"]);
+        ConfigureInputControl(_horizontalPlacement);
+
         _verticalPlacement.DropDownStyle = ComboBoxStyle.DropDownList;
         _verticalPlacement.Items.AddRange(["위", "가운데", "아래"]);
+        ConfigureInputControl(_verticalPlacement);
 
         grid.Controls.Add(MakeLabel("가로 정렬"), 0, 1);
         grid.Controls.Add(_horizontalPlacement, 1, 1);
         grid.Controls.Add(MakeLabel("세로 정렬"), 2, 1);
         grid.Controls.Add(_verticalPlacement, 3, 1);
 
-        var hint = new Label
-        {
-            Dock = DockStyle.Fill,
-            AutoSize = true,
-            Text = "도면 비율을 유지한 채 내용 최대 너비/높이 안에 맞춥니다. 가로/세로 중 먼저 한계에 닿는 쪽을 기준으로 축소·확대하고, 실제 내용 사각형을 작업 공간 안에서 좌/중/우 · 상/중/하 정렬합니다.",
-            ForeColor = SystemColors.GrayText,
-            TextAlign = ContentAlignment.MiddleLeft
-        };
-        grid.SetColumnSpan(hint, 4);
-        grid.Controls.Add(hint, 0, 2);
         return page;
     }
 
     private Control BuildOutputPanel()
     {
-        var grid = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 3, RowCount = 1 };
-        grid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 70));
+        var group = new GroupBox
+        {
+            Text = "출력 폴더",
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8, 6, 8, 6),
+            Margin = new Padding(0, 0, 0, 4)
+        };
+
+        var grid = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 2,
+            RowCount = 1,
+            Margin = Padding.Empty
+        };
         grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        grid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 105));
+        grid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 104));
 
-        grid.Controls.Add(MakeLabel("출력 폴더"), 0, 0);
-        _outputFolder.Dock = DockStyle.Fill;
-        _outputFolder.PlaceholderText = "비워두면 원본 폴더 아래 SVG / PNG / SWF 폴더에 각각 저장";
-        grid.Controls.Add(_outputFolder, 1, 0);
+        _outputFolder.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+        _outputFolder.Margin = new Padding(0, 2, 6, 2);
+        _outputFolder.PlaceholderText = "비워두면 원본 폴더 아래 형식별 폴더에 저장";
+        grid.Controls.Add(_outputFolder, 0, 0);
 
-        var browse = new Button { Text = "폴더 선택", Dock = DockStyle.Fill };
+        var browse = new Button
+        {
+            Text = "폴더 선택",
+            Anchor = AnchorStyles.Left | AnchorStyles.Right,
+            Height = 28,
+            Margin = new Padding(0, 2, 0, 2)
+        };
         browse.Click += (_, _) => BrowseOutputFolder();
-        grid.Controls.Add(browse, 2, 0);
-        return grid;
+        grid.Controls.Add(browse, 1, 0);
+
+        group.Controls.Add(grid);
+        return group;
     }
 
     private Control BuildActionsPanel()
     {
-        var panel = new FlowLayoutPanel
+        var panel = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            FlowDirection = FlowDirection.LeftToRight,
-            Padding = new Padding(0, 5, 0, 0)
+            ColumnCount = 5,
+            RowCount = 1,
+            Margin = new Padding(0, 0, 0, 6)
         };
-
-        _convert.Text = "변환";
-        _convert.Width = 130;
-        _convert.Height = 32;
-        _convert.Click += ConvertClickedAsync;
-
-        var openOutput = new Button { Text = "출력 폴더 열기", Width = 130, Height = 32 };
-        openOutput.Click += (_, _) => OpenOutputFolder();
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
 
         _viewSwf.Text = "SWF 보기";
-        _viewSwf.Width = 110;
-        _viewSwf.Height = 32;
+        _viewSwf.Width = 96;
+        _viewSwf.Height = 30;
+        _viewSwf.Anchor = AnchorStyles.None;
+        _viewSwf.Margin = new Padding(0, 3, 6, 3);
         _viewSwf.Click += (_, _) => OpenSwfViewer();
 
-        panel.Controls.Add(_convert);
-        panel.Controls.Add(openOutput);
-        panel.Controls.Add(_viewSwf);
+        var openOutput = new Button
+        {
+            Text = "출력 폴더 열기",
+            Width = 116,
+            Height = 30,
+            Anchor = AnchorStyles.None,
+            Margin = new Padding(0, 3, 6, 3)
+        };
+        openOutput.Click += (_, _) => OpenOutputFolder();
+
+        _convert.Text = "변환 시작";
+        _convert.Width = 126;
+        _convert.Height = 30;
+        _convert.Anchor = AnchorStyles.None;
+        _convert.Margin = new Padding(0, 3, 0, 3);
+        _convert.Click += ConvertClickedAsync;
+
+        panel.Controls.Add(_viewSwf, 1, 0);
+        panel.Controls.Add(openOutput, 2, 0);
+        panel.Controls.Add(_convert, 3, 0);
         return panel;
+    }
+
+    private Control BuildLogPanel()
+    {
+        var group = new GroupBox
+        {
+            Text = "작업 로그",
+            Dock = DockStyle.Fill,
+            Padding = new Padding(8),
+            Margin = new Padding(0)
+        };
+
+        _log.Dock = DockStyle.Fill;
+        _log.Multiline = true;
+        _log.ScrollBars = ScrollBars.Vertical;
+        _log.ReadOnly = true;
+        _log.BorderStyle = BorderStyle.FixedSingle;
+        _log.Font = new Font("Consolas", 9F);
+
+        group.Controls.Add(_log);
+        return group;
     }
 
     private static TableLayoutPanel CreateSettingsGrid(int rows)
@@ -336,14 +410,17 @@ public sealed class MainForm : Form
             Dock = DockStyle.Fill,
             ColumnCount = 4,
             RowCount = rows,
-            Padding = new Padding(10)
+            Padding = new Padding(8, 6, 8, 6)
         };
-        grid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 145));
+
+        grid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 155));
         grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
-        grid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 145));
+        grid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 155));
         grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+
         for (var i = 0; i < rows; i++)
             grid.RowStyles.Add(new RowStyle(SizeType.Percent, 100f / rows));
+
         return grid;
     }
 
@@ -351,13 +428,29 @@ public sealed class MainForm : Form
     {
         Text = text,
         Dock = DockStyle.Fill,
+        Margin = Padding.Empty,
+        Padding = new Padding(4, 0, 6, 0),
         TextAlign = ContentAlignment.MiddleLeft
     };
 
+    private static void ConfigureCheckBox(CheckBox checkBox)
+    {
+        checkBox.AutoSize = true;
+        checkBox.Anchor = AnchorStyles.Left;
+        checkBox.Margin = new Padding(4, 0, 4, 0);
+    }
+
+    private static void ConfigureInputControl(Control control)
+    {
+        control.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+        control.Margin = new Padding(4, 2, 4, 2);
+    }
+
     private void SetupColorButton(Button button, Func<Color> getter, Action<Color> setter)
     {
-        button.Dock = DockStyle.Fill;
-        button.Height = 26;
+        button.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+        button.Height = 28;
+        button.Margin = new Padding(4, 2, 4, 2);
         button.Click += (_, _) =>
         {
             using var dialog = new ColorDialog
@@ -376,7 +469,7 @@ public sealed class MainForm : Form
     {
         control.Minimum = 16;
         control.Maximum = 30000;
-        control.Dock = DockStyle.Fill;
+        ConfigureInputControl(control);
     }
 
     private void BrowseFiles()
@@ -679,12 +772,6 @@ public sealed class MainForm : Form
         button.UseVisualStyleBackColor = false;
     }
 
-    private void UpdateSwfToolStatus()
-    {
-        _swfToolStatus.Text = "내장 직접 SWF Writer";
-        _swfToolStatus.ForeColor = Color.DarkGreen;
-    }
-
     private void UpdateFlashViewerStatus()
     {
         _flashViewerStatus.Text = LegacyFlashViewer.StatusText;
@@ -783,9 +870,5 @@ public sealed class MainForm : Form
         Process.Start(new ProcessStartInfo { FileName = folder, UseShellExecute = true });
     }
 
-    private void OpenSwfToolFolder()
-    {
-        MessageBox.Show(this, "SWF 변환은 내장 DefineShape3 직접 Writer를 사용합니다. 외부 변환 도구는 필요하지 않습니다.", Text,
-            MessageBoxButtons.OK, MessageBoxIcon.Information);
-    }
+
 }
