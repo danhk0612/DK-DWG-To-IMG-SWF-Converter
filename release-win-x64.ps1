@@ -33,6 +33,7 @@ Get-ChildItem $publish -Recurse -Filter *.pdb -File -ErrorAction SilentlyContinu
 
 Copy-Item (Join-Path $publish "*") $stage -Recurse -Force
 Copy-Item (Join-Path $root "README.md") $stage -Force
+Copy-Item (Join-Path $root "LICENSE") $stage -Force
 Copy-Item (Join-Path $root "THIRD_PARTY.md") $stage -Force
 
 Compress-Archive -Path (Join-Path $stage "*") -DestinationPath $zip -CompressionLevel Optimal -Force

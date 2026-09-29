@@ -1,5 +1,9 @@
 # Third-party components
 
+This file lists third-party components used by or distributed separately for this project.
+The project's MIT License covers only code and materials authored for this repository unless otherwise noted.
+Third-party components remain subject to their own licenses.
+
 ## ACadSharp.Image
 
 - Purpose: DWG/DXF parsing and CAD rendering to SVG
