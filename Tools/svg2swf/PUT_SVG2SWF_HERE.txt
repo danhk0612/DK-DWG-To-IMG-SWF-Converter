@@ -1,0 +1,14 @@
+SWF 변환을 사용하려면 이 폴더에 아래 파일을 넣으세요.
+
+필수:
+- svg2swf.exe
+- 해당 svg2swf 빌드가 요구하는 DLL 파일들
+
+프로그램은 다음 경로만 확인합니다:
+Tools\svg2swf\svg2swf.exe
+
+공식 프로젝트:
+https://svg2swf.sourceforge.net/
+
+SourceForge의 Windows 빌드는 오래된 32비트 프로그램이므로,
+exe만 복사하지 말고 함께 배포된 DLL도 같은 폴더에 두는 것이 안전합니다.

@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>DwgConverter</AssemblyName>
+    <RootNamespace>DwgToPngPoC</RootNamespace>
+    <Version>0.3.8</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ACadSharp.Image" Version="0.1.6" />
+    <PackageReference Include="Svg.Skia" Version="5.2.3" />
+    <PackageReference Include="NetTopologySuite" Version="2.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Tools\FlashViewer\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+</Project>
