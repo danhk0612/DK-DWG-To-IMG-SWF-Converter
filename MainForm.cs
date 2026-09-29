@@ -27,8 +27,7 @@ public sealed class MainForm : Form
 
     private readonly TextBox _outputFolder = new();
     private readonly Label _flashViewerStatus = new();
-    private readonly Button _downloadChromium = new();
-    private readonly Button _refreshFlashViewer = new();
+    private readonly Button _flashViewerAction = new();
     private readonly Button _convert = new();
     private readonly Button _viewSwf = new();
     private string? _lastSwfPath;
@@ -215,31 +214,11 @@ public sealed class MainForm : Form
         grid.Controls.Add(MakeLabel("SWF 뷰어"), 0, 2);
         grid.Controls.Add(_flashViewerStatus, 1, 2);
 
-        var viewerActionPanel = new Panel
-        {
-            Dock = DockStyle.Fill,
-            Margin = Padding.Empty
-        };
-
-        _downloadChromium.Text = "Chromium 다운로드";
-        _downloadChromium.Anchor = AnchorStyles.Left | AnchorStyles.Right;
-        _downloadChromium.Height = 28;
-        _downloadChromium.Left = 4;
-        _downloadChromium.Top = 2;
-        _downloadChromium.Width = 147;
-        _downloadChromium.Click += DownloadChromiumClickedAsync;
-        viewerActionPanel.Controls.Add(_downloadChromium);
-
-        _refreshFlashViewer.Text = "상태 새로고침";
-        _refreshFlashViewer.Anchor = AnchorStyles.Left | AnchorStyles.Right;
-        _refreshFlashViewer.Height = 28;
-        _refreshFlashViewer.Left = 4;
-        _refreshFlashViewer.Top = 2;
-        _refreshFlashViewer.Width = 147;
-        _refreshFlashViewer.Click += (_, _) => UpdateFlashViewerStatus();
-        viewerActionPanel.Controls.Add(_refreshFlashViewer);
-
-        grid.Controls.Add(viewerActionPanel, 2, 2);
+        _flashViewerAction.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+        _flashViewerAction.Height = 28;
+        _flashViewerAction.Margin = new Padding(4, 2, 4, 2);
+        _flashViewerAction.Click += FlashViewerActionClickedAsync;
+        grid.Controls.Add(_flashViewerAction, 2, 2);
 
         var openViewerFolder = new Button
         {
@@ -804,12 +783,19 @@ public sealed class MainForm : Form
     {
         _flashViewerStatus.Text = LegacyFlashViewer.StatusText;
         _flashViewerStatus.ForeColor = LegacyFlashViewer.IsAvailable ? Color.DarkGreen : Color.DarkRed;
-        _downloadChromium.Visible = !LegacyFlashViewer.IsChromiumX86;
-        _refreshFlashViewer.Visible = LegacyFlashViewer.IsChromiumX86;
+        _flashViewerAction.Text = LegacyFlashViewer.IsChromiumX86
+            ? "상태 새로고침"
+            : "Chromium 다운로드";
     }
 
-    private async void DownloadChromiumClickedAsync(object? sender, EventArgs e)
+    private async void FlashViewerActionClickedAsync(object? sender, EventArgs e)
     {
+        if (LegacyFlashViewer.IsChromiumX86)
+        {
+            UpdateFlashViewerStatus();
+            return;
+        }
+
         await DownloadChromiumAsync();
     }
 
@@ -828,8 +814,8 @@ public sealed class MainForm : Form
         if (confirm != DialogResult.Yes)
             return false;
 
-        _downloadChromium.Enabled = false;
-        _downloadChromium.Text = "다운로드 중...";
+        _flashViewerAction.Enabled = false;
+        _flashViewerAction.Text = "다운로드 중...";
         AppendLog("Chromium 53 x86 다운로드 및 설치 시작");
 
         try
@@ -857,8 +843,8 @@ public sealed class MainForm : Form
         }
         finally
         {
-            _downloadChromium.Text = "Chromium 다운로드";
-            _downloadChromium.Enabled = true;
+            _flashViewerAction.Text = "Chromium 다운로드";
+            _flashViewerAction.Enabled = true;
         }
     }
 
