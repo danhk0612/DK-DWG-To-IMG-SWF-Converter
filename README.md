@@ -1,4 +1,4 @@
-# DK DWG To IMG/SWF Converter v0.4.0
+# DK DWG To IMG/SWF Converter v0.4.1
 
 DWG 모델 공간을 SVG, PNG, 편집 가능한 벡터 SWF로 변환하는 Windows .NET 10 WinForms 도구입니다. 실행 파일명은 `DK-DWG-To-IMG-SWF-Converter.exe`입니다.
 
@@ -118,6 +118,13 @@ publish-win-x64.bat
 - 단일 EXE가 아니므로 배포할 때는 `publish\win-x64` 폴더의 파일을 함께 배포해야 합니다.
 - 배포 스크립트는 이전 self-contained 파일이 남지 않도록 출력 폴더를 비운 뒤 새로 publish합니다.
 - 배포에 불필요한 `.pdb` 디버그 심볼은 생성/복사하지 않으며, 패키지에서 따라오는 PDB도 publish 후 제거합니다.
+
+
+## 라이선스
+
+이 프로젝트가 직접 작성한 코드는 **MIT License**로 배포됩니다. 자세한 조건은 저장소의 `LICENSE`를 확인하세요.
+
+제3자 라이브러리와 별도 배포되는 Chromium은 MIT License의 적용 대상이 아니며, 각각의 원래 라이선스를 따릅니다. 관련 정보는 `THIRD_PARTY.md`에 정리되어 있습니다.
 
 ## 릴리스 자동화
 
