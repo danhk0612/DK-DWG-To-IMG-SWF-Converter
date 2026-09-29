@@ -27,6 +27,7 @@ public sealed class MainForm : Form
 
     private readonly TextBox _outputFolder = new();
     private readonly Label _flashViewerStatus = new();
+    private readonly Button _downloadChromium = new();
     private readonly Button _convert = new();
     private readonly Button _viewSwf = new();
     private string? _lastSwfPath;
@@ -211,8 +212,14 @@ public sealed class MainForm : Form
         _flashViewerStatus.Margin = new Padding(3, 0, 3, 0);
 
         grid.Controls.Add(MakeLabel("SWF 뷰어"), 0, 2);
-        grid.SetColumnSpan(_flashViewerStatus, 2);
         grid.Controls.Add(_flashViewerStatus, 1, 2);
+
+        _downloadChromium.Text = "Chromium 다운로드";
+        _downloadChromium.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+        _downloadChromium.Height = 28;
+        _downloadChromium.Margin = new Padding(4, 2, 4, 2);
+        _downloadChromium.Click += DownloadChromiumClickedAsync;
+        grid.Controls.Add(_downloadChromium, 2, 2);
 
         var openViewerFolder = new Button
         {
@@ -779,6 +786,60 @@ public sealed class MainForm : Form
         _flashViewerStatus.ForeColor = LegacyFlashViewer.IsAvailable ? Color.DarkGreen : Color.DarkRed;
     }
 
+    private async void DownloadChromiumClickedAsync(object? sender, EventArgs e)
+    {
+        await DownloadChromiumAsync();
+    }
+
+    private async Task<bool> DownloadChromiumAsync()
+    {
+        var confirm = MessageBox.Show(this,
+            "SWF 확인용 Chromium 53.0.2785.143 x86을 GitHub에서 다운로드합니다." + Environment.NewLine +
+            "다운로드 크기는 약 61 MB입니다." + Environment.NewLine + Environment.NewLine +
+            "Pepper Flash는 포함되지 않으며 x86 pepflashplayer.dll은 직접 넣어야 합니다." + Environment.NewLine + Environment.NewLine +
+            "계속하시겠습니까?",
+            "Chromium 다운로드",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Information,
+            MessageBoxDefaultButton.Button1);
+
+        if (confirm != DialogResult.Yes)
+            return false;
+
+        _downloadChromium.Enabled = false;
+        _downloadChromium.Text = "다운로드 중...";
+        AppendLog("Chromium 53 x86 다운로드 및 설치 시작");
+
+        try
+        {
+            await LegacyFlashViewer.InstallChromiumAsync();
+            UpdateFlashViewerStatus();
+            AppendLog("Chromium 53 x86 설치 완료");
+
+            MessageBox.Show(this,
+                "Chromium 53 x86 설치가 완료되었습니다." + Environment.NewLine + Environment.NewLine +
+                "SWF 보기를 사용하려면 x86 pepflashplayer.dll을 다음 폴더에 직접 넣어주세요." + Environment.NewLine +
+                LegacyFlashViewer.PepperDirectory,
+                "Chromium 설치 완료",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            UpdateFlashViewerStatus();
+            AppendLog($"Chromium 설치 실패: {ex.Message}");
+            MessageBox.Show(this, ex.Message, "Chromium 설치 실패",
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return false;
+        }
+        finally
+        {
+            _downloadChromium.Text = "Chromium 다운로드";
+            _downloadChromium.Enabled = true;
+        }
+    }
+
     private void OpenFlashViewerFolder()
     {
         Directory.CreateDirectory(LegacyFlashViewer.ChromiumDirectory);
@@ -787,19 +848,42 @@ public sealed class MainForm : Form
         UpdateFlashViewerStatus();
     }
 
-    private void OpenSwfViewer()
+    private void OpenPepperFlashFolder()
+    {
+        Directory.CreateDirectory(LegacyFlashViewer.PepperDirectory);
+        Process.Start(new ProcessStartInfo { FileName = LegacyFlashViewer.PepperDirectory, UseShellExecute = true });
+    }
+
+    private async void OpenSwfViewer()
     {
         UpdateFlashViewerStatus();
 
-        if (!LegacyFlashViewer.IsAvailable)
+        if (!LegacyFlashViewer.HasChromium || !LegacyFlashViewer.IsChromiumX86)
         {
-            Directory.CreateDirectory(LegacyFlashViewer.ChromiumDirectory);
-            Directory.CreateDirectory(LegacyFlashViewer.PepperDirectory);
-            MessageBox.Show(this,
-                $"SWF 보기에는 Flash를 지원하는 구형 Chromium과 pepflashplayer.dll이 필요합니다.{Environment.NewLine}{Environment.NewLine}" +
-                $"Chromium: {LegacyFlashViewer.ChromiumExecutablePath}{Environment.NewLine}" +
-                $"Pepper Flash: {LegacyFlashViewer.PepperFlashPath}",
-                "SWF 뷰어 파일 없음", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            if (!await DownloadChromiumAsync())
+                return;
+        }
+
+        if (!LegacyFlashViewer.HasPepperFlash || !LegacyFlashViewer.IsPepperFlashX86)
+        {
+            var reason = LegacyFlashViewer.HasPepperFlash
+                ? "현재 pepflashplayer.dll이 x86 버전이 아닙니다."
+                : "x86 pepflashplayer.dll이 없습니다.";
+
+            var openFolder = MessageBox.Show(this,
+                reason + Environment.NewLine + Environment.NewLine +
+                "다음 폴더에 x86 pepflashplayer.dll을 직접 넣어주세요." + Environment.NewLine +
+                LegacyFlashViewer.PepperDirectory + Environment.NewLine + Environment.NewLine +
+                "Pepper Flash 폴더를 여시겠습니까?",
+                "Pepper Flash 필요",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Information,
+                MessageBoxDefaultButton.Button1);
+
+            if (openFolder == DialogResult.Yes)
+                OpenPepperFlashFolder();
+
+            UpdateFlashViewerStatus();
             return;
         }
 
