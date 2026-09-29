@@ -1,0 +1,17 @@
+# .NET build output
+bin/
+obj/
+publish/
+
+# Visual Studio / user state
+.vs/
+*.user
+*.suo
+
+# Local Flash viewer binaries supplied by the user
+Tools/FlashViewer/Chromium/
+Tools/FlashViewer/PepperFlash/
+
+# Local/temp files
+*.tmp
+*.log
