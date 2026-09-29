@@ -843,8 +843,8 @@ public sealed class MainForm : Form
         }
         finally
         {
-            _flashViewerAction.Text = "Chromium 다운로드";
             _flashViewerAction.Enabled = true;
+            UpdateFlashViewerStatus();
         }
     }
 
