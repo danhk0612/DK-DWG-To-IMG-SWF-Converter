@@ -113,3 +113,4 @@ publish-win-x64.bat
 - 출력 위치: `publish\win-x64`
 - 단일 EXE가 아니므로 배포할 때는 `publish\win-x64` 폴더의 파일을 함께 배포해야 합니다.
 - 배포 스크립트는 이전 self-contained 파일이 남지 않도록 출력 폴더를 비운 뒤 새로 publish합니다.
+- 배포에 불필요한 `.pdb` 디버그 심볼은 생성/복사하지 않으며, 패키지에서 따라오는 PDB도 publish 후 제거합니다.
