@@ -29,7 +29,14 @@
 
 ## Optional legacy Chromium / Adobe Pepper Flash viewer
 
-DwgConverter does not include Chromium or Adobe Flash Player / Pepper Flash binaries.
+The main DK DWG To IMG/SWF Converter package does not include Chromium or Adobe Flash Player / Pepper Flash binaries.
 
-The optional local SWF viewer runs only user-supplied binaries placed under `Tools\FlashViewer`.
-Licensing and redistribution terms for those binaries remain the responsibility of the supplied distribution.
+An optional Chromium 53.0.2785.0 x86 runtime is distributed separately as a GitHub Release asset for the SWF viewer.
+It is based on official Chromium snapshot revision 403380 and is not Google Chrome.
+
+- Project: https://www.chromium.org/
+- Snapshot source: https://storage.googleapis.com/chromium-browser-snapshots/Win/403380/chrome-win32.zip
+- Chromium code is distributed under a BSD-style license, with bundled third-party components subject to their respective licenses.
+
+Adobe Pepper Flash is not distributed by this project.
+Users must supply their own x86 `pepflashplayer.dll` under `Tools\FlashViewer\PepperFlash`.
