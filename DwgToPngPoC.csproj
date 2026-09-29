@@ -9,7 +9,11 @@
     <PublishSingleFile>false</PublishSingleFile>
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
-    <AssemblyName>DwgConverter</AssemblyName>
+    <AssemblyName>DK-DWG-To-IMG-SWF-Converter</AssemblyName>
+    <AssemblyTitle>DK DWG To IMG/SWF Converter</AssemblyTitle>
+    <Product>DK DWG To IMG/SWF Converter</Product>
+    <Description>DWG to SVG, PNG and editable vector SWF converter</Description>
+    <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
     <RootNamespace>DwgToPngPoC</RootNamespace>
     <Version>0.3.8</Version>
   </PropertyGroup>

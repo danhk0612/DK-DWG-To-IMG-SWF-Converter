@@ -38,7 +38,7 @@ public sealed class MainForm : Form
 
     public MainForm(IEnumerable<string> initialFiles)
     {
-        Text = "DWG → SVG / PNG / SWF v0.3.8";
+        Text = "DK DWG To IMG/SWF Converter";
         StartPosition = FormStartPosition.CenterScreen;
         AutoScaleMode = AutoScaleMode.Dpi;
         Font = new Font("Segoe UI", 9F);
