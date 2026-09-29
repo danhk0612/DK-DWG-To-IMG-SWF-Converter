@@ -90,9 +90,9 @@ Chromium/Flash 바이너리는 저장소와 배포물에 포함하지 않습니�
 - `DrawingRiskAssessment.cs`: 대용량/고복잡도 사전 위험 판정
 - `LegacyFlashViewer.cs`: 선택적 로컬 SWF 확인 기능
 
-## 빌드
+## 빌드 / 배포
 
-Windows에서 .NET 10 SDK가 필요합니다.
+소스 빌드에는 Windows용 .NET 10 SDK가 필요합니다.
 
 일반 Release 빌드:
 
@@ -100,10 +100,16 @@ Windows에서 .NET 10 SDK가 필요합니다.
 build.bat
 ```
 
-현재 win-x64 배포:
+win-x64 배포:
 
 ```bat
 publish-win-x64.bat
 ```
 
-현재 배포 스크립트는 self-contained 단일 파일 방식입니다. Framework-dependent 배포 전환은 별도 단계에서 진행합니다.
+배포 방식은 **Framework-dependent**입니다.
+
+- .NET Runtime은 배포물에 포함하지 않습니다.
+- 실행 PC에는 **.NET 10 Desktop Runtime (x64)** 이 설치되어 있어야 합니다.
+- 출력 위치: `publish\win-x64`
+- 단일 EXE가 아니므로 배포할 때는 `publish\win-x64` 폴더의 파일을 함께 배포해야 합니다.
+- 배포 스크립트는 이전 self-contained 파일이 남지 않도록 출력 폴더를 비운 뒤 새로 publish합니다.
