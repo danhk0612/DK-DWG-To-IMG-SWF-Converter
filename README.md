@@ -79,7 +79,8 @@ Tools\FlashViewer\PepperFlash\manifest.json   # 선택
 ```
 
 - Chromium은 프로그램의 `Chromium 다운로드` 버튼으로 GitHub Release에서 내려받아 설치할 수 있습니다.
-- Chromium ZIP은 SHA-256을 확인한 뒤 설치합니다.
+- 배포하는 Chromium은 공식 snapshot revision `403380`의 Chromium 53.0.2785.0 x86입니다.
+- Chromium ZIP은 SHA-256 `66ddd4f54b5bbb21ee87eba2beed9677f2edbe87592372ca74ed2d42f6c4bce2`를 확인한 뒤 설치합니다.
 - Pepper Flash는 패키지에 포함하지 않으며 사용자가 x86 `pepflashplayer.dll`을 직접 넣어야 합니다.
 - Chromium/Pepper Flash 바이너리는 기본 프로그램 배포물에 포함하지 않습니다.
 
