@@ -7,6 +7,8 @@
     <Nullable>enable</Nullable>
     <SelfContained>false</SelfContained>
     <PublishSingleFile>false</PublishSingleFile>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
     <AssemblyName>DwgConverter</AssemblyName>
     <RootNamespace>DwgToPngPoC</RootNamespace>
     <Version>0.3.8</Version>
