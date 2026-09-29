@@ -1,4 +1,4 @@
-# DK DWG To IMG/SWF Converter v0.3.8
+# DK DWG To IMG/SWF Converter v0.4.0
 
 DWG 모델 공간을 SVG, PNG, 편집 가능한 벡터 SWF로 변환하는 Windows .NET 10 WinForms 도구입니다. 실행 파일명은 `DK-DWG-To-IMG-SWF-Converter.exe`입니다.
 
