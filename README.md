@@ -118,3 +118,18 @@ publish-win-x64.bat
 - 단일 EXE가 아니므로 배포할 때는 `publish\win-x64` 폴더의 파일을 함께 배포해야 합니다.
 - 배포 스크립트는 이전 self-contained 파일이 남지 않도록 출력 폴더를 비운 뒤 새로 publish합니다.
 - 배포에 불필요한 `.pdb` 디버그 심볼은 생성/복사하지 않으며, 패키지에서 따라오는 PDB도 publish 후 제거합니다.
+
+## 릴리스 자동화
+
+정식 프로그램 Release는 GitHub Actions가 자동 생성합니다.
+
+- Pull Request에서는 `release-win-x64.ps1`로 실제 배포 ZIP 생성까지 검증하고 Release는 만들지 않습니다.
+- `main`에 병합되면 프로젝트의 `Version`을 읽어 `vX.Y.Z` Release 존재 여부를 확인합니다.
+- 같은 버전 Release가 이미 있으면 중복 배포하지 않습니다.
+- 새 버전이면 Windows runner에서 Framework-dependent win-x64 배포를 새로 생성합니다.
+- 프로그램 ZIP과 SHA-256 파일을 GitHub Release Asset으로 게시합니다.
+- Chromium/Pepper Flash 바이너리는 프로그램 Release ZIP에 포함하지 않습니다.
+- 수동 실행이 필요하면 GitHub Actions의 `Release` workflow를 실행할 수 있습니다.
+
+새 정식 버전 배포 흐름은 **버전 변경 PR → CI 검증 → main 병합 → 자동 Release 생성**입니다.
+

@@ -1,0 +1,109 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Read version
+        id: version
+        shell: pwsh
+        run: |
+          [xml]$project = Get-Content .\DwgToPngPoC.csproj
+          $version = [string]$project.Project.PropertyGroup.Version
+          if ([string]::IsNullOrWhiteSpace($version)) { throw "Project Version not found." }
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "tag=v$version" >> $env:GITHUB_OUTPUT
+
+      - name: Check existing release
+        if: github.event_name != 'pull_request'
+        id: existing
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $false
+          gh release view "${{ steps.version.outputs.tag }}" --repo "${{ github.repository }}" 2>$null | Out-Null
+          if ($LASTEXITCODE -eq 0) {
+            "exists=true" >> $env:GITHUB_OUTPUT
+            Write-Host "Release ${{ steps.version.outputs.tag }} already exists. Skipping."
+          }
+          else {
+            "exists=false" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Build release package
+        if: github.event_name == 'pull_request' || steps.existing.outputs.exists != 'true'
+        id: package
+        shell: pwsh
+        run: .\release-win-x64.ps1
+
+      - name: Build release notes
+        if: github.event_name != 'pull_request' && steps.existing.outputs.exists != 'true'
+        id: notes
+        shell: pwsh
+        run: |
+          $previous = git tag --list "v[0-9]*" --sort=-version:refname | Select-Object -First 1
+          if ($previous) {
+            $changes = git log "$previous..HEAD" --pretty=format:"- %s (%h)"
+          }
+          else {
+            $changes = git log -20 --pretty=format:"- %s (%h)"
+          }
+          if (-not $changes) { $changes = "- Release preparation" }
+          $notesPath = Join-Path $env:RUNNER_TEMP "release-notes.md"
+          $lines = @(
+            "## 변경 사항",
+            "",
+            ($changes -join [Environment]::NewLine),
+            "",
+            "## 실행 요구사항",
+            "",
+            "- .NET 10 Desktop Runtime x64 필요",
+            "- Framework-dependent win-x64 배포",
+            "",
+            "## SWF 보기",
+            "",
+            "- Chromium 53 x86은 프로그램에서 선택적으로 다운로드 가능",
+            "- Chromium 다운로드 파일은 SHA-256 검증 후 설치",
+            "- Adobe Pepper Flash는 포함하지 않음",
+            "- x86 pepflashplayer.dll은 사용자가 직접 준비"
+          )
+          Set-Content -Path $notesPath -Value $lines -Encoding utf8
+          "notes_path=$notesPath" >> $env:GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        if: github.event_name != 'pull_request' && steps.existing.outputs.exists != 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "${{ steps.version.outputs.tag }}"
+          $title = "DK DWG To IMG/SWF Converter v${{ steps.version.outputs.version }}"
+          gh release create $tag "${{ steps.package.outputs.zip }}" "${{ steps.package.outputs.sha_file }}" --repo "${{ github.repository }}" --target "${{ github.sha }}" --title $title --notes-file "${{ steps.notes.outputs.notes_path }}"
