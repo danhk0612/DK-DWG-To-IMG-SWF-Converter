@@ -51,6 +51,7 @@ public sealed class MainForm : Form
 
         BuildUi();
         ApplySettings(SettingsStore.Load());
+        LegacyFlashViewer.EnsureDirectories();
         UpdateFlashViewerStatus();
 
         DragEnter += OnDragEnter;
@@ -783,6 +784,7 @@ public sealed class MainForm : Form
     {
         _flashViewerStatus.Text = LegacyFlashViewer.StatusText;
         _flashViewerStatus.ForeColor = LegacyFlashViewer.IsAvailable ? Color.DarkGreen : Color.DarkRed;
+        _flashViewerAction.Visible = !LegacyFlashViewer.IsAvailable;
         _flashViewerAction.Text = LegacyFlashViewer.IsChromiumX86
             ? "상태 새로고침"
             : "Chromium 다운로드";
