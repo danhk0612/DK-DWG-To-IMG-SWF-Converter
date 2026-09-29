@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -39,6 +42,7 @@ jobs:
           "tag=v$version" >> $env:GITHUB_OUTPUT
 
       - name: Check existing release
+        if: github.event_name != 'pull_request'
         id: existing
         shell: pwsh
         env:
@@ -55,13 +59,13 @@ jobs:
           }
 
       - name: Build release package
-        if: steps.existing.outputs.exists != 'true'
+        if: github.event_name == 'pull_request' || steps.existing.outputs.exists != 'true'
         id: package
         shell: pwsh
         run: .\release-win-x64.ps1
 
       - name: Build release notes
-        if: steps.existing.outputs.exists != 'true'
+        if: github.event_name != 'pull_request' && steps.existing.outputs.exists != 'true'
         id: notes
         shell: pwsh
         run: |
@@ -95,7 +99,7 @@ jobs:
           "notes_path=$notesPath" >> $env:GITHUB_OUTPUT
 
       - name: Create GitHub Release
-        if: steps.existing.outputs.exists != 'true'
+        if: github.event_name != 'pull_request' && steps.existing.outputs.exists != 'true'
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
