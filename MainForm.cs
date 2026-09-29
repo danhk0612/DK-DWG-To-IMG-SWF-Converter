@@ -784,6 +784,7 @@ public sealed class MainForm : Form
     {
         _flashViewerStatus.Text = LegacyFlashViewer.StatusText;
         _flashViewerStatus.ForeColor = LegacyFlashViewer.IsAvailable ? Color.DarkGreen : Color.DarkRed;
+        _downloadChromium.Visible = !LegacyFlashViewer.IsChromiumX86;
     }
 
     private async void DownloadChromiumClickedAsync(object? sender, EventArgs e)
