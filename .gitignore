@@ -2,6 +2,7 @@
 bin/
 obj/
 publish/
+_viewer-package/
 
 # Visual Studio / local IDE state
 .vs/
