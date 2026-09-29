@@ -10,9 +10,9 @@ namespace DwgToPngPoC;
 internal static class LegacyFlashViewer
 {
     private const string ChromiumPackageUrl =
-        "https://github.com/danhk0612/DK-DWG-To-IMG-SWF-Converter/releases/download/viewer-chromium-53.0.2785.143-x86/chromium-53.0.2785.143-x86.zip";
+        "https://github.com/danhk0612/DK-DWG-To-IMG-SWF-Converter/releases/download/viewer-chromium-53.0.2785.0-x86/chromium-53.0.2785.0-x86.zip";
     private const string ChromiumPackageSha256 =
-        "02707dd0b701cefa233e962f74d24621b63c51fc69c72842583a1c02912c88f9";
+        "PENDING_VERIFIED_CHROMIUM_PACKAGE_SHA256";
 
     private static readonly HttpClient HttpClient = new();
 
@@ -53,7 +53,7 @@ internal static class LegacyFlashViewer
 
         var packagePath = Path.Combine(
             Path.GetTempPath(),
-            $"chromium-53.0.2785.143-x86-{Guid.NewGuid():N}.zip");
+            $"chromium-53.0.2785.0-x86-{Guid.NewGuid():N}.zip");
         var stagingDirectory = Path.Combine(
             ToolDirectory,
             $".Chromium-install-{Guid.NewGuid():N}");
