@@ -69,9 +69,9 @@ public sealed class MainForm : Form
             RowCount = 5,
             Padding = new Padding(12)
         };
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 130));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 138));
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 205));
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 58));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 64));
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 46));
         root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         Controls.Add(root);
@@ -92,7 +92,7 @@ public sealed class MainForm : Form
             Text = "입력 DWG",
             Dock = DockStyle.Fill,
             Padding = new Padding(8),
-            Margin = new Padding(0, 0, 0, 6)
+            Margin = new Padding(0, 0, 0, 4)
         };
 
         var panel = new TableLayoutPanel
@@ -181,19 +181,23 @@ public sealed class MainForm : Form
         ConfigureInputControl(_height);
 
         grid.Controls.Add(MakeLabel("출력 형식"), 0, 0);
-        var formatFlow = new FlowLayoutPanel
+        var formatGrid = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            FlowDirection = FlowDirection.LeftToRight,
-            WrapContents = false,
-            Padding = new Padding(0, 5, 0, 0),
-            Margin = Padding.Empty
+            ColumnCount = 4,
+            RowCount = 1,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty
         };
-        formatFlow.Controls.Add(_exportSvg);
-        formatFlow.Controls.Add(_exportPng);
-        formatFlow.Controls.Add(_exportSwf);
-        grid.SetColumnSpan(formatFlow, 3);
-        grid.Controls.Add(formatFlow, 1, 0);
+        formatGrid.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        formatGrid.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        formatGrid.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        formatGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        formatGrid.Controls.Add(_exportSvg, 0, 0);
+        formatGrid.Controls.Add(_exportPng, 1, 0);
+        formatGrid.Controls.Add(_exportSwf, 2, 0);
+        grid.SetColumnSpan(formatGrid, 3);
+        grid.Controls.Add(formatGrid, 1, 0);
 
         grid.Controls.Add(MakeLabel("작업 공간 너비"), 0, 1);
         grid.Controls.Add(_width, 1, 1);
@@ -300,7 +304,7 @@ public sealed class MainForm : Form
             Text = "출력 폴더",
             Dock = DockStyle.Fill,
             Padding = new Padding(8, 6, 8, 6),
-            Margin = new Padding(0, 0, 0, 6)
+            Margin = new Padding(0, 0, 0, 4)
         };
 
         var grid = new TableLayoutPanel
@@ -334,39 +338,46 @@ public sealed class MainForm : Form
 
     private Control BuildActionsPanel()
     {
-        var panel = new FlowLayoutPanel
+        var panel = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            FlowDirection = FlowDirection.RightToLeft,
-            WrapContents = false,
-            Padding = new Padding(0, 3, 0, 0),
+            ColumnCount = 5,
+            RowCount = 1,
             Margin = new Padding(0, 0, 0, 6)
         };
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
 
-        _convert.Text = "변환 시작";
-        _convert.Width = 126;
-        _convert.Height = 30;
-        _convert.Margin = new Padding(6, 0, 0, 0);
-        _convert.Click += ConvertClickedAsync;
+        _viewSwf.Text = "SWF 보기";
+        _viewSwf.Width = 96;
+        _viewSwf.Height = 30;
+        _viewSwf.Anchor = AnchorStyles.None;
+        _viewSwf.Margin = new Padding(0, 3, 6, 3);
+        _viewSwf.Click += (_, _) => OpenSwfViewer();
 
         var openOutput = new Button
         {
             Text = "출력 폴더 열기",
             Width = 116,
             Height = 30,
-            Margin = new Padding(6, 0, 0, 0)
+            Anchor = AnchorStyles.None,
+            Margin = new Padding(0, 3, 6, 3)
         };
         openOutput.Click += (_, _) => OpenOutputFolder();
 
-        _viewSwf.Text = "SWF 보기";
-        _viewSwf.Width = 96;
-        _viewSwf.Height = 30;
-        _viewSwf.Margin = Padding.Empty;
-        _viewSwf.Click += (_, _) => OpenSwfViewer();
+        _convert.Text = "변환 시작";
+        _convert.Width = 126;
+        _convert.Height = 30;
+        _convert.Anchor = AnchorStyles.None;
+        _convert.Margin = new Padding(0, 3, 0, 3);
+        _convert.Click += ConvertClickedAsync;
 
-        panel.Controls.Add(_convert);
-        panel.Controls.Add(openOutput);
-        panel.Controls.Add(_viewSwf);
+        panel.Controls.Add(_viewSwf, 1, 0);
+        panel.Controls.Add(openOutput, 2, 0);
+        panel.Controls.Add(_convert, 3, 0);
         return panel;
     }
 
