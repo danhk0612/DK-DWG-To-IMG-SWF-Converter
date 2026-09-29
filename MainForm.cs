@@ -105,6 +105,7 @@ public sealed class MainForm : Form
         panel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 108));
 
         _files.Dock = DockStyle.Fill;
+        _files.Margin = new Padding(0, 0, 0, 4);
         _files.HorizontalScrollbar = true;
         _files.IntegralHeight = false;
         _files.BorderStyle = BorderStyle.FixedSingle;
