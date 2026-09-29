@@ -70,7 +70,7 @@ Hatch, Insert, Spline 개수도 함께 표시합니다. 고위험 도면에서�
 
 SWF 생성 자체에는 Flash가 필요하지 않습니다.
 
-프로그램의 선택적 `SWF 보기` 기능은 Chromium 53.0.2785.143 x86과 x86 Pepper Flash를 사용합니다.
+프로그램의 선택적 `SWF 보기` 기능은 Chromium 53.0.2785.0 x86과 x86 Pepper Flash를 사용합니다.
 
 ```text
 Tools\FlashViewer\Chromium\chrome.exe
