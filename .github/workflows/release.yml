@@ -48,14 +48,25 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $PSNativeCommandUseErrorActionPreference = $false
-          gh release view "${{ steps.version.outputs.tag }}" --repo "${{ github.repository }}" 2>$null | Out-Null
-          if ($LASTEXITCODE -eq 0) {
+          $uri = "https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ steps.version.outputs.tag }}"
+          $headers = @{
+            Authorization = "Bearer $env:GH_TOKEN"
+            Accept = "application/vnd.github+json"
+            "X-GitHub-Api-Version" = "2022-11-28"
+          }
+
+          $response = Invoke-WebRequest -Uri $uri -Headers $headers -SkipHttpErrorCheck
+
+          if ($response.StatusCode -eq 200) {
             "exists=true" >> $env:GITHUB_OUTPUT
             Write-Host "Release ${{ steps.version.outputs.tag }} already exists. Skipping."
           }
-          else {
+          elseif ($response.StatusCode -eq 404) {
             "exists=false" >> $env:GITHUB_OUTPUT
+            Write-Host "Release ${{ steps.version.outputs.tag }} does not exist. Creating it."
+          }
+          else {
+            throw "Failed to check release. HTTP $($response.StatusCode)"
           }
 
       - name: Build release package
