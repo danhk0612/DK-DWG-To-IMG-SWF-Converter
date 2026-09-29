@@ -12,7 +12,7 @@ internal static class LegacyFlashViewer
     private const string ChromiumPackageUrl =
         "https://github.com/danhk0612/DK-DWG-To-IMG-SWF-Converter/releases/download/viewer-chromium-53.0.2785.0-x86/chromium-53.0.2785.0-x86.zip";
     private const string ChromiumPackageSha256 =
-        "PENDING_VERIFIED_CHROMIUM_PACKAGE_SHA256";
+        "66ddd4f54b5bbb21ee87eba2beed9677f2edbe87592372ca74ed2d42f6c4bce2";
 
     private static readonly HttpClient HttpClient = new();
 
