@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Globalization;
 
 namespace DwgToPngPoC;
 
@@ -13,15 +14,19 @@ public sealed class MainForm : Form
 
     private readonly CheckBox _transparentBackground = new();
     private readonly Button _backgroundColorButton = new();
+    private readonly TextBox _backgroundColorInput = new();
     private readonly CheckBox _overrideStrokeColor = new();
     private readonly Button _strokeColorButton = new();
+    private readonly TextBox _strokeColorInput = new();
     private readonly CheckBox _overrideStrokeWidth = new();
     private readonly NumericUpDown _strokeWidth = new();
     private readonly CheckBox _fillClosedShapes = new();
     private readonly Button _fillColorButton = new();
+    private readonly TextBox _fillColorInput = new();
 
     private readonly NumericUpDown _contentWidth = new();
     private readonly NumericUpDown _contentHeight = new();
+    private readonly ComboBox _contentFitMode = new();
     private readonly ComboBox _horizontalPlacement = new();
     private readonly ComboBox _verticalPlacement = new();
 
@@ -244,15 +249,17 @@ public sealed class MainForm : Form
         ConfigureCheckBox(_transparentBackground);
         _transparentBackground.CheckedChanged += (_, _) => UpdateStyleControlState();
         grid.Controls.Add(_transparentBackground, 0, 0);
-        SetupColorButton(_backgroundColorButton, () => _backgroundColor, c => _backgroundColor = c);
-        grid.Controls.Add(_backgroundColorButton, 1, 0);
+        grid.Controls.Add(
+            BuildColorEditor(_backgroundColorButton, _backgroundColorInput, () => _backgroundColor, c => _backgroundColor = c),
+            1, 0);
 
         _overrideStrokeColor.Text = "선 색상 지정";
         ConfigureCheckBox(_overrideStrokeColor);
         _overrideStrokeColor.CheckedChanged += (_, _) => UpdateStyleControlState();
         grid.Controls.Add(_overrideStrokeColor, 0, 1);
-        SetupColorButton(_strokeColorButton, () => _strokeColor, c => _strokeColor = c);
-        grid.Controls.Add(_strokeColorButton, 1, 1);
+        grid.Controls.Add(
+            BuildColorEditor(_strokeColorButton, _strokeColorInput, () => _strokeColor, c => _strokeColor = c),
+            1, 1);
 
         _overrideStrokeWidth.Text = "선 두께 지정";
         ConfigureCheckBox(_overrideStrokeWidth);
@@ -270,8 +277,9 @@ public sealed class MainForm : Form
         ConfigureCheckBox(_fillClosedShapes);
         _fillClosedShapes.CheckedChanged += (_, _) => UpdateStyleControlState();
         grid.Controls.Add(_fillClosedShapes, 0, 2);
-        SetupColorButton(_fillColorButton, () => _fillColor, c => _fillColor = c);
-        grid.Controls.Add(_fillColorButton, 1, 2);
+        grid.Controls.Add(
+            BuildColorEditor(_fillColorButton, _fillColorInput, () => _fillColor, c => _fillColor = c),
+            1, 2);
 
         return page;
     }
@@ -279,7 +287,7 @@ public sealed class MainForm : Form
     private TabPage BuildLayoutTab()
     {
         var page = new TabPage("크기 / 정렬");
-        var grid = CreateSettingsGrid(2);
+        var grid = CreateSettingsGrid(3);
         page.Controls.Add(grid);
 
         SetupContentSize(_contentWidth);
@@ -290,6 +298,13 @@ public sealed class MainForm : Form
         grid.Controls.Add(MakeLabel("내용 최대 높이"), 2, 0);
         grid.Controls.Add(_contentHeight, 3, 0);
 
+        _contentFitMode.DropDownStyle = ComboBoxStyle.DropDownList;
+        _contentFitMode.Items.AddRange(["꽉 차게 축소", "꽉 차게 확대", "꽉 차게 비율 무시"]);
+        ConfigureInputControl(_contentFitMode);
+        grid.Controls.Add(MakeLabel("내용 맞춤"), 0, 1);
+        grid.Controls.Add(_contentFitMode, 1, 1);
+        grid.SetColumnSpan(_contentFitMode, 3);
+
         _horizontalPlacement.DropDownStyle = ComboBoxStyle.DropDownList;
         _horizontalPlacement.Items.AddRange(["왼쪽", "가운데", "오른쪽"]);
         ConfigureInputControl(_horizontalPlacement);
@@ -298,10 +313,10 @@ public sealed class MainForm : Form
         _verticalPlacement.Items.AddRange(["위", "가운데", "아래"]);
         ConfigureInputControl(_verticalPlacement);
 
-        grid.Controls.Add(MakeLabel("가로 정렬"), 0, 1);
-        grid.Controls.Add(_horizontalPlacement, 1, 1);
-        grid.Controls.Add(MakeLabel("세로 정렬"), 2, 1);
-        grid.Controls.Add(_verticalPlacement, 3, 1);
+        grid.Controls.Add(MakeLabel("가로 정렬"), 0, 2);
+        grid.Controls.Add(_horizontalPlacement, 1, 2);
+        grid.Controls.Add(MakeLabel("세로 정렬"), 2, 2);
+        grid.Controls.Add(_verticalPlacement, 3, 2);
 
         return page;
     }
@@ -454,11 +469,40 @@ public sealed class MainForm : Form
         control.Margin = new Padding(4, 2, 4, 2);
     }
 
-    private void SetupColorButton(Button button, Func<Color> getter, Action<Color> setter)
+    private Control BuildColorEditor(
+        Button button,
+        TextBox input,
+        Func<Color> getter,
+        Action<Color> setter)
     {
+        var panel = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 2,
+            RowCount = 1,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty
+        };
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 64));
+
+        input.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+        input.Margin = new Padding(4, 2, 4, 2);
+        input.MaxLength = 7;
+        input.CharacterCasing = CharacterCasing.Upper;
+        input.Leave += (_, _) => ApplyColorInput(input, getter, setter);
+        input.KeyDown += (_, e) =>
+        {
+            if (e.KeyCode != Keys.Enter)
+                return;
+
+            ApplyColorInput(input, getter, setter);
+            e.SuppressKeyPress = true;
+        };
+
         button.Anchor = AnchorStyles.Left | AnchorStyles.Right;
         button.Height = 28;
-        button.Margin = new Padding(4, 2, 4, 2);
+        button.Margin = new Padding(2, 2, 4, 2);
         button.Click += (_, _) =>
         {
             using var dialog = new ColorDialog
@@ -468,9 +512,29 @@ public sealed class MainForm : Form
             };
             if (dialog.ShowDialog(this) != DialogResult.OK)
                 return;
+
             setter(dialog.Color);
             UpdateColorButtons();
         };
+
+        panel.Controls.Add(input, 0, 0);
+        panel.Controls.Add(button, 1, 0);
+        return panel;
+    }
+
+    private void ApplyColorInput(TextBox input, Func<Color> getter, Action<Color> setter)
+    {
+        if (TryParseHexColor(input.Text, out var color))
+        {
+            setter(color);
+        }
+        else
+        {
+            input.Text = ColorToHex(getter());
+            System.Media.SystemSounds.Beep.Play();
+        }
+
+        UpdateColorButtons();
     }
 
     private static void SetupContentSize(NumericUpDown control)
@@ -549,6 +613,7 @@ public sealed class MainForm : Form
         }
 
         var files = _files.Items.Cast<string>().ToArray();
+        var results = new List<ConversionOutputItem>();
 
         SaveSettings();
         _convert.Enabled = false;
@@ -566,12 +631,19 @@ public sealed class MainForm : Form
                 {
                     var result = await Task.Run(() => pipeline.Convert(file, selectedOutput, settings));
                     if (result.SvgPath is not null)
+                    {
+                        results.Add(new ConversionOutputItem(file, "SVG", result.SvgPath));
                         AppendLog($"  SVG: {result.SvgPath}");
+                    }
                     if (result.PngPath is not null)
+                    {
+                        results.Add(new ConversionOutputItem(file, "PNG", result.PngPath));
                         AppendLog($"  PNG: {result.PngPath}");
+                    }
                     if (result.SwfPath is not null)
                     {
                         _lastSwfPath = result.SwfPath;
+                        results.Add(new ConversionOutputItem(file, "SWF", result.SwfPath));
                         AppendLog($"  SWF: {result.SwfPath}");
                     }
                 }
@@ -617,6 +689,12 @@ public sealed class MainForm : Form
         finally
         {
             _convert.Enabled = true;
+        }
+
+        if (results.Count > 0)
+        {
+            using var resultsForm = new ConversionResultsForm(results, OpenSwfPathAsync);
+            resultsForm.ShowDialog(this);
         }
     }
 
@@ -690,6 +768,10 @@ public sealed class MainForm : Form
 
     private ConverterSettings ReadSettingsFromUi()
     {
+        ApplyColorInput(_backgroundColorInput, () => _backgroundColor, c => _backgroundColor = c);
+        ApplyColorInput(_strokeColorInput, () => _strokeColor, c => _strokeColor = c);
+        ApplyColorInput(_fillColorInput, () => _fillColor, c => _fillColor = c);
+
         return new ConverterSettings
         {
             ExportSvg = _exportSvg.Checked,
@@ -707,6 +789,7 @@ public sealed class MainForm : Form
             FillColor = ColorToHex(_fillColor),
             ContentWidth = (int)_contentWidth.Value,
             ContentHeight = (int)_contentHeight.Value,
+            FitMode = (ContentFitMode)Math.Max(0, _contentFitMode.SelectedIndex),
             HorizontalPlacement = (HorizontalPlacement)Math.Max(0, _horizontalPlacement.SelectedIndex),
             VerticalPlacement = (VerticalPlacement)Math.Max(0, _verticalPlacement.SelectedIndex),
             OutputFolder = _outputFolder.Text.Trim()
@@ -732,6 +815,7 @@ public sealed class MainForm : Form
 
         SetNumeric(_contentWidth, settings.ContentWidth);
         SetNumeric(_contentHeight, settings.ContentHeight);
+        _contentFitMode.SelectedIndex = Math.Clamp((int)settings.FitMode, 0, 2);
         _horizontalPlacement.SelectedIndex = Math.Clamp((int)settings.HorizontalPlacement, 0, 2);
         _verticalPlacement.SelectedIndex = Math.Clamp((int)settings.VerticalPlacement, 0, 2);
         _outputFolder.Text = settings.OutputFolder ?? string.Empty;
@@ -760,23 +844,27 @@ public sealed class MainForm : Form
     private void UpdateStyleControlState()
     {
         _backgroundColorButton.Enabled = !_transparentBackground.Checked;
+        _backgroundColorInput.Enabled = !_transparentBackground.Checked;
         _strokeColorButton.Enabled = _overrideStrokeColor.Checked;
+        _strokeColorInput.Enabled = _overrideStrokeColor.Checked;
         _strokeWidth.Enabled = _overrideStrokeWidth.Checked;
         _fillColorButton.Enabled = _fillClosedShapes.Checked;
+        _fillColorInput.Enabled = _fillClosedShapes.Checked;
     }
 
     private void UpdateColorButtons()
     {
-        UpdateColorButton(_backgroundColorButton, _backgroundColor);
-        UpdateColorButton(_strokeColorButton, _strokeColor);
-        UpdateColorButton(_fillColorButton, _fillColor);
+        UpdateColorButton(_backgroundColorButton, _backgroundColorInput, _backgroundColor);
+        UpdateColorButton(_strokeColorButton, _strokeColorInput, _strokeColor);
+        UpdateColorButton(_fillColorButton, _fillColorInput, _fillColor);
     }
 
-    private static void UpdateColorButton(Button button, Color color)
+    private static void UpdateColorButton(Button button, TextBox input, Color color)
     {
+        input.Text = ColorToHex(color);
         button.BackColor = color;
         button.ForeColor = color.GetBrightness() < 0.5f ? Color.White : Color.Black;
-        button.Text = ColorToHex(color);
+        button.Text = "선택";
         button.UseVisualStyleBackColor = false;
     }
 
@@ -866,6 +954,11 @@ public sealed class MainForm : Form
 
     private async void OpenSwfViewer()
     {
+        await OpenSwfPathAsync(null);
+    }
+
+    private async Task OpenSwfPathAsync(string? requestedPath)
+    {
         UpdateFlashViewerStatus();
 
         if (!LegacyFlashViewer.HasChromium || !LegacyFlashViewer.IsChromiumX86)
@@ -897,7 +990,17 @@ public sealed class MainForm : Form
             return;
         }
 
-        var swfPath = _lastSwfPath;
+        string? swfPath = requestedPath;
+        if (!string.IsNullOrWhiteSpace(swfPath) && !File.Exists(swfPath))
+        {
+            MessageBox.Show(this, "선택한 SWF 결과 파일이 존재하지 않습니다.", "SWF 보기",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(swfPath))
+            swfPath = _lastSwfPath;
+
         if (string.IsNullOrWhiteSpace(swfPath) || !File.Exists(swfPath))
         {
             using var dialog = new OpenFileDialog
@@ -921,6 +1024,26 @@ public sealed class MainForm : Form
     }
 
     private static string ColorToHex(Color color) => $"#{color.R:X2}{color.G:X2}{color.B:X2}";
+
+    private static bool TryParseHexColor(string? value, out Color color)
+    {
+        color = Color.Empty;
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+
+        var normalized = value.Trim();
+        if (!normalized.StartsWith('#'))
+            normalized = "#" + normalized;
+
+        if (normalized.Length != 7 ||
+            !int.TryParse(normalized.AsSpan(1), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var rgb))
+        {
+            return false;
+        }
+
+        color = Color.FromArgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
+        return true;
+    }
 
     private static Color HexToColor(string? value, Color fallback)
     {
