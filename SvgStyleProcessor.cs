@@ -75,12 +75,21 @@ internal static class SvgStyleProcessor
         var sourceWidth = Math.Max(source.Width, 1e-9);
         var sourceHeight = Math.Max(source.Height, 1e-9);
 
-        var scale = Math.Min(maxContentWidth / sourceWidth, maxContentHeight / sourceHeight);
-        if (!double.IsFinite(scale) || scale <= 0)
+        var fitScaleX = maxContentWidth / sourceWidth;
+        var fitScaleY = maxContentHeight / sourceHeight;
+
+        var (scaleX, scaleY) = settings.FitMode switch
+        {
+            ContentFitMode.Fill => (Math.Max(fitScaleX, fitScaleY), Math.Max(fitScaleX, fitScaleY)),
+            ContentFitMode.Stretch => (fitScaleX, fitScaleY),
+            _ => (Math.Min(fitScaleX, fitScaleY), Math.Min(fitScaleX, fitScaleY))
+        };
+
+        if (!double.IsFinite(scaleX) || !double.IsFinite(scaleY) || scaleX <= 0 || scaleY <= 0)
             throw new InvalidOperationException("도면 내용 배율을 계산할 수 없습니다.");
 
-        var actualWidth = sourceWidth * scale;
-        var actualHeight = sourceHeight * scale;
+        var actualWidth = sourceWidth * scaleX;
+        var actualHeight = sourceHeight * scaleY;
         var freeX = settings.Width - actualWidth;
         var freeY = settings.Height - actualHeight;
         var offsetX = settings.HorizontalPlacement switch
@@ -96,7 +105,8 @@ internal static class SvgStyleProcessor
             _ => freeY / 2.0
         };
 
-        return new LayoutResult(offsetX, offsetY, scale, scale, scale);
+        var strokeScale = Math.Sqrt(scaleX * scaleY);
+        return new LayoutResult(offsetX, offsetY, scaleX, scaleY, strokeScale);
     }
 
     private static void WrapContent(XElement root, ViewBox source, LayoutResult layout)

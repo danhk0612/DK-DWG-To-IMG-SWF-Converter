@@ -1,4 +1,4 @@
-# DK DWG To IMG/SWF Converter v0.4.1
+# DK DWG To IMG/SWF Converter v0.5.0
 
 DWG 모델 공간을 SVG, PNG, 편집 가능한 벡터 SWF로 변환하는 Windows .NET 10 WinForms 도구입니다. 실행 파일명은 `DK-DWG-To-IMG-SWF-Converter.exe`입니다.
 
@@ -17,13 +17,21 @@ DWG
 지원 설정:
 
 - 작업 공간 너비/높이
-- 내용 최대 너비/높이와 종횡비 유지
+- 내용 너비/높이와 맞춤 모드
+  - 꽉 차게 축소: 종횡비를 유지하며 전체 내용이 보이도록 맞춤
+  - 꽉 차게 확대: 종횡비를 유지하며 지정 영역을 가득 채움
+  - 꽉 차게 비율 무시: 가로/세로를 독립 배율로 지정 영역에 맞춤
 - 좌/중/우, 상/중/하 정렬
 - 투명/지정 배경
+- 색상 선택기와 `#RRGGBB` 직접 입력
 - 선 색/두께 일괄 지정
 - 닫힌 영역 채우기
 - raw SVG 캐시
 - 대형 SVG 저장 단계 heartbeat 로그
+- 변환 완료 후 입력 파일/형식별 결과 창
+  - SVG/PNG는 기본 연결 프로그램으로 미리보기
+  - SWF는 선택한 결과 파일을 내장 SWF 보기 흐름으로 확인
+  - 각 결과의 출력 폴더 열기
 
 ### 일반 크기 SWF
 
@@ -83,6 +91,17 @@ Tools\FlashViewer\PepperFlash\manifest.json   # 선택
 - Chromium ZIP은 SHA-256 `66ddd4f54b5bbb21ee87eba2beed9677f2edbe87592372ca74ed2d42f6c4bce2`를 확인한 뒤 설치합니다.
 - Pepper Flash는 패키지에 포함하지 않으며 사용자가 x86 `pepflashplayer.dll`을 직접 넣어야 합니다.
 - Chromium/Pepper Flash 바이너리는 기본 프로그램 배포물에 포함하지 않습니다.
+
+## 최초 기본 설정
+
+설정 파일이 아직 없는 최초 실행 기준 기본값은 다음과 같습니다.
+
+- 투명 배경
+- 선 색상 지정: 검정색 `#000000`
+- 선 두께 지정: `1.0`
+- 닫힌 영역 채우기: 흰색 `#FFFFFF`
+
+기존 사용자의 저장된 설정은 그대로 유지됩니다.
 
 ## 주요 파일
 

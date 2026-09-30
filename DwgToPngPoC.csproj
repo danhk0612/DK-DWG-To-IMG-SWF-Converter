@@ -15,7 +15,7 @@
     <Description>DWG to SVG, PNG and editable vector SWF converter</Description>
     <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
     <RootNamespace>DwgToPngPoC</RootNamespace>
-    <Version>0.4.1</Version>
+    <Version>0.5.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

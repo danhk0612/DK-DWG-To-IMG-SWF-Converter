@@ -47,7 +47,7 @@ internal static class CadDirectSwfExporter
 
         log($"    [SWF-DIRECT] 모델 공간 {modelCount:N0}개 엔티티 직접 변환 시작");
         log($"    [SWF-DIRECT] 전체 SVG DOM 생성 없음 / 작업 공간 {settings.Width:N0}×{settings.Height:N0}px / " +
-            $"내용 최대 공간 {settings.ContentWidth:N0}×{settings.ContentHeight:N0}px (비율 유지) / " +
+            $"내용 공간 {settings.ContentWidth:N0}×{settings.ContentHeight:N0}px / 맞춤 {settings.FitMode} / " +
             $"초기 좌표 배율 {layout.Scale:0.######}");
         if (stats.SimplifyPatternHatches)
             log("    [SWF-DIRECT] 대용량 최적화: 패턴 Hatch 내부선 전개를 생략하고 경계만 처리합니다.");
@@ -102,7 +102,8 @@ internal static class CadDirectSwfExporter
             settings.ContentWidth,
             settings.ContentHeight,
             settings.HorizontalPlacement,
-            settings.VerticalPlacement);
+            settings.VerticalPlacement,
+            settings.FitMode);
         if (fit.HasContent)
         {
             log($"    [SWF-DIRECT] 실제 벡터 경계 {fit.SourceWidthPx:0.#}×{fit.SourceHeightPx:0.#}px → " +

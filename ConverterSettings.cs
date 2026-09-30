@@ -16,6 +16,13 @@ internal enum VerticalPlacement
     Bottom
 }
 
+internal enum ContentFitMode
+{
+    FitInside,
+    Fill,
+    Stretch
+}
+
 internal sealed class ConverterSettings
 {
     public bool ExportSvg { get; set; }
@@ -24,21 +31,21 @@ internal sealed class ConverterSettings
     public int Width { get; set; } = 2400;
     public int Height { get; set; } = 1600;
 
-    public bool TransparentBackground { get; set; }
+    public bool TransparentBackground { get; set; } = true;
     public string BackgroundColor { get; set; } = "#FFFFFF";
 
-    public bool OverrideStrokeColor { get; set; }
+    public bool OverrideStrokeColor { get; set; } = true;
     public string StrokeColor { get; set; } = "#000000";
-    public bool OverrideStrokeWidth { get; set; }
-    public decimal StrokeWidthPixels { get; set; } = 2.0m;
+    public bool OverrideStrokeWidth { get; set; } = true;
+    public decimal StrokeWidthPixels { get; set; } = 1.0m;
 
-    public bool FillClosedShapes { get; set; }
+    public bool FillClosedShapes { get; set; } = true;
     public string FillColor { get; set; } = "#FFFFFF";
 
-    // Maximum rectangle available to the fitted drawing content.
-    // The drawing keeps its aspect ratio; Width/Height are the independent workspace/canvas size.
+    // Rectangle used to fit drawing content. Width/Height are the independent workspace/canvas size.
     public int ContentWidth { get; set; } = 2400;
     public int ContentHeight { get; set; } = 1600;
+    public ContentFitMode FitMode { get; set; } = ContentFitMode.FitInside;
     public HorizontalPlacement HorizontalPlacement { get; set; } = HorizontalPlacement.Center;
     public VerticalPlacement VerticalPlacement { get; set; } = VerticalPlacement.Center;
 
