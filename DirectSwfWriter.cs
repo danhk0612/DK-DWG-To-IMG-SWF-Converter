@@ -95,7 +95,8 @@ internal sealed class DirectSwfDocument
         int contentWidthPx,
         int contentHeightPx,
         HorizontalPlacement horizontalPlacement,
-        VerticalPlacement verticalPlacement)
+        VerticalPlacement verticalPlacement,
+        ContentFitMode fitMode)
     {
         var shapes = _backShapes.Concat(_shapes).Where(s => s.HasItems).ToArray();
         if (shapes.Length == 0)
@@ -123,14 +124,20 @@ internal sealed class DirectSwfDocument
         var maxWidth = Math.Max(1, contentWidthPx) * (double)TwipsPerPixel;
         var maxHeight = Math.Max(1, contentHeightPx) * (double)TwipsPerPixel;
 
-        // ContentWidth/ContentHeight are a maximum content box. Use one uniform scale so
-        // the drawing keeps its original aspect ratio and fits inside that box.
-        var scale = Math.Min(maxWidth / sourceWidth, maxHeight / sourceHeight);
-        if (!double.IsFinite(scale) || scale <= 0)
+        var fitScaleX = maxWidth / sourceWidth;
+        var fitScaleY = maxHeight / sourceHeight;
+        var (scaleX, scaleY) = fitMode switch
+        {
+            ContentFitMode.Fill => (Math.Max(fitScaleX, fitScaleY), Math.Max(fitScaleX, fitScaleY)),
+            ContentFitMode.Stretch => (fitScaleX, fitScaleY),
+            _ => (Math.Min(fitScaleX, fitScaleY), Math.Min(fitScaleX, fitScaleY))
+        };
+
+        if (!double.IsFinite(scaleX) || !double.IsFinite(scaleY) || scaleX <= 0 || scaleY <= 0)
             return new SwfContentFitResult(false, 0, 0, 0, 0, 0, 0, 0, 0);
 
-        var actualWidth = sourceWidth * scale;
-        var actualHeight = sourceHeight * scale;
+        var actualWidth = sourceWidth * scaleX;
+        var actualHeight = sourceHeight * scaleY;
         var workspaceWidth = _width * (double)TwipsPerPixel;
         var workspaceHeight = _height * (double)TwipsPerPixel;
         var freeX = workspaceWidth - actualWidth;
@@ -150,7 +157,7 @@ internal sealed class DirectSwfDocument
         };
 
         foreach (var shape in shapes)
-            shape.TransformGeometry(xmin, ymin, scale, scale, targetX, targetY);
+            shape.TransformGeometry(xmin, ymin, scaleX, scaleY, targetX, targetY);
 
         return new SwfContentFitResult(
             true,
@@ -160,8 +167,8 @@ internal sealed class DirectSwfDocument
             targetY / TwipsPerPixel,
             actualWidth / TwipsPerPixel,
             actualHeight / TwipsPerPixel,
-            scale,
-            scale);
+            scaleX,
+            scaleY);
     }
 
     private static void AddFillCore(List<DirectSwfShape> target, IEnumerable<IReadOnlyList<SwfPoint>> ringsPx, SwfRgba color)
